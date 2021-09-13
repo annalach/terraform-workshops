@@ -1,2 +1,2 @@
-# 3. Elastic Compute Cloud
+# 2. Elastic Compute Cloud
 

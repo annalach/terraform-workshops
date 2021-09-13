@@ -1,2 +1,2 @@
-# 10. Load Balancer & Auto Scaling Group
+# 9. Load Balancer & Auto Scaling Group
 

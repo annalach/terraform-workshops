@@ -1,2 +1,2 @@
-# 9. Amazon Machine Image
+# 8. Amazon Machine Image
 

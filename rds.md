@@ -1,2 +1,2 @@
-# 8. Relational Database Service
+# 7. Relational Database Service
 

@@ -1,2 +1,2 @@
-# 7. VPC Endpoint
+# 6. VPC Endpoint
 

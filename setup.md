@@ -15,5 +15,8 @@ Follow **Homebrew on OS X** installation guide on [Terraform webpage](https://le
 
 Follow **Homebrew on OS X** installation guide on [Packer webpage](https://learn.hashicorp.com/tutorials/packer/get-started-install-cli).
 
+## VS Code Extensions
 
+* [HashiCorp Terraform](https://marketplace.visualstudio.com/items?itemName=HashiCorp.terraform)
+* [Packer](https://marketplace.visualstudio.com/items?itemName=4ops.packer)
 

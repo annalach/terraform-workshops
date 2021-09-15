@@ -496,5 +496,98 @@ Destroy complete! Resources: 1 destroyed.
 
 ## Variables <a id="variables-and-outputs"></a>
 
+```bash
+$ touch variables.tf
+```
+
+{% code title="terraform-workshops/ec2/variables.tf" %}
+```bash
+variable "instance_name" {
+  description = "Value of the Name tag for the EC instance"
+  type        = string
+  default     = "TerraformWorkshops"
+}
+```
+{% endcode %}
+
+{% code title="$ git diff" %}
+```bash
+@@ -19,6 +19,6 @@ resource "aws_instance" "web" {
+   instance_type = "t2.micro"
+ 
+   tags = {
+-    Name = "TerraformWorkshops"
++    Name = var.instance_name
+   }
+ }
+```
+{% endcode %}
+
 ## Data Sources <a id="data-sources"></a>
+
+```bash
+data "aws_ami" "ubuntu" {
+  most_recent = true
+
+  filter {
+    name   = "name"
+    values = ["ubuntu/images/hvm-ssd/ubuntu-focal-20.04-amd64-server-*"]
+  }
+
+  filter {
+    name   = "virtualization-type"
+    values = ["hvm"]
+  }
+
+  owners = ["099720109477"] # Canonical
+}
+```
+
+{% code title="$ git diff" %}
+```bash
+@@ -14,8 +14,24 @@ provider "aws" {
+   region  = "eu-central-1"
+ }
+ 
++data "aws_ami" "ubuntu" {
++  most_recent = true
++
++  filter {
++    name   = "name"
++    values = ["ubuntu/images/hvm-ssd/ubuntu-focal-20.04-amd64-server-*"]
++  }
++
++  filter {
++    name   = "virtualization-type"
++    values = ["hvm"]
++  }
++
++  owners = ["099720109477"] # Canonical
++}
++
+ resource "aws_instance" "web" {
+-  ami           = "ami-091f21ecba031b39a"
++  ami           = data.aws_ami.ubuntu.id
+   instance_type = "t2.micro"
+ 
+   tags = {
+```
+{% endcode %}
+
+## Outputs
+
+```bash
+$ touch outputs.tf
+```
+
+{% code title="terraform-workshops/ec2/outputs.tf" %}
+```bash
+output "instance_public_ip" {
+  description = "Publi IP address of the EC2 instace"
+  value       = aws_instance.web.public_ip
+}
+```
+{% endcode %}
+
+Run `terraform apply` command.
 

@@ -187,11 +187,7 @@ Do you want to perform these actions?
   Terraform will perform the actions described above.
   Only 'yes' will be accepted to approve.
 
-  Enter a value: 
-```
-
-```bash
-Enter a value: yes
+  Enter a value: yes
 
 aws_instance.web: Creating...
 aws_instance.web: Still creating... [10s elapsed]

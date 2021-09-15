@@ -19,6 +19,6 @@ resource "aws_instance" "web" {
   instance_type = "t2.micro"
 
   tags = {
-    Name = "TerraformWorkshops"
+    Name = var.instance_name
   }
 }

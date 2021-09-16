@@ -46,12 +46,7 @@ resource "aws_instance" "web" {
   instance_type          = "t2.micro"
   vpc_security_group_ids = [aws_security_group.web.id]
 
-  user_data = <<-EOF
-              #!/bin/bash
-              echo "Hello, World" > index.html
-              nohup busybox httpd -f -p ${var.server_port} &
-              EOF
-
+  user_data = templatefile("./user_data.sh", { port = var.server_port })
 
   tags = {
     Name = var.instance_name

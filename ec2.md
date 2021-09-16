@@ -800,3 +800,38 @@ $ curl http://3.68.88.93:5000
 Hello, World
 ```
 
+```bash
+$ touch user_data.sh
+```
+
+{% code title="terraform-workshops/ec2/user\_data.sh" %}
+```bash
+#!/bin/bash
+echo "Hello, World" > index.html
+nohup busybox httpd -f -p ${port} &
+```
+{% endcode %}
+
+[templatefile](https://www.terraform.io/docs/language/functions/templatefile.html) function
+
+{% code title="terraform-workshops/ec2/main.tf" %}
+```bash
+@@ -46,12 +46,7 @@ resource "aws_instance" "web" {
+   instance_type          = "t2.micro"
+   vpc_security_group_ids = [aws_security_group.web.id]
+ 
+-  user_data = <<-EOF
+-              #!/bin/bash
+-              echo "Hello, World" > index.html
+-              nohup busybox httpd -f -p ${var.server_port} &
+-              EOF
+-
++  user_data = templatefile("./user_data.sh", { port = var.server_port })
+ 
+   tags = {
+     Name = var.instance_name
+```
+{% endcode %}
+
+The example code from this section is available [here](https://github.com/annalach/terraform-workshops/tree/master/terraform-workshops/ec2).
+

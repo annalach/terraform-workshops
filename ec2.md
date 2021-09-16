@@ -198,7 +198,7 @@ aws_instance.web: Creation complete after 35s [id=i-0090a8e6cfe9585c6]
 Apply complete! Resources: 1 added, 0 changed, 0 destroyed.
 ```
 
-{% code title="$ git diff" %}
+{% code title="terraform-workshops/ec2/main.tf" %}
 ```bash
 @@ -19,6 +19,6 @@ resource "aws_instance" "web" {
    instance_type = "t2.micro"
@@ -249,7 +249,7 @@ Do you want to perform these actions?
   Enter a value:
 ```
 
-{% code title="$ git diff" %}
+{% code title="terraform-workshops/ec2/main.tf" %}
 ```bash
 @@ -15,7 +15,7 @@ provider "aws" {
  }
@@ -506,7 +506,7 @@ variable "instance_name" {
 ```
 {% endcode %}
 
-{% code title="$ git diff" %}
+{% code title="terraform-workshops/ec2/main.tf" %}
 ```bash
 @@ -19,6 +19,6 @@ resource "aws_instance" "web" {
    instance_type = "t2.micro"
@@ -539,7 +539,7 @@ data "aws_ami" "ubuntu" {
 }
 ```
 
-{% code title="$ git diff" %}
+{% code title="terraform-workshops/ec2/main.tf" %}
 ```bash
 @@ -14,8 +14,24 @@ provider "aws" {
    region  = "eu-central-1"
@@ -585,5 +585,216 @@ output "instance_public_ip" {
 ```
 {% endcode %}
 
-Run `terraform apply` command.
+## Simple Web Server
+
+{% code title="terraform-workshops/ec2/variables.tf" %}
+```bash
+@@ -3,3 +3,9 @@ variable "instance_name" {
+   type        = string
+   default     = "TerraformWorkshops"
+ }
++
++variable "server_port" {
++  description = "The port the server will use for HTTP requests"
++  type        = number
++  default     = 5000
++}
+```
+{% endcode %}
+
+{% code title="terraform-workshops/ec2/main.tf" %}
+```bash
+@@ -30,9 +30,28 @@ data "aws_ami" "ubuntu" {
+   owners = ["099720109477"] # Canonical
+ }
+ 
++resource "aws_security_group" "web" {
++
++  ingress {
++    from_port   = var.server_port
++    to_port     = var.server_port
++    protocol    = "tcp"
++    cidr_blocks = ["0.0.0.0/0"]
++  }
++
++}
++
+ resource "aws_instance" "web" {
+   ami                    = data.aws_ami.ubuntu.id
+   instance_type          = "t2.micro"
++  vpc_security_group_ids = [aws_security_group.web.id]
++
++  user_data = <<-EOF
++              #!/bin/bash
++              echo "Hello, World" > index.html
++              nohup busybox httpd -f -p ${var.server_port} &
++              EOF
++
+ 
+   tags = {
+     Name = var.instance_name
+```
+{% endcode %}
+
+```bash
+$ terraform apply --auto-approve
+
+Terraform used the selected providers to generate the following execution plan. Resource actions are indicated with the following symbols:
+  + create
+
+Terraform will perform the following actions:
+
+  # aws_instance.web will be created
+  + resource "aws_instance" "web" {
+      + ami                                  = "ami-091f21ecba031b39a"
+      + arn                                  = (known after apply)
+      + associate_public_ip_address          = (known after apply)
+      + availability_zone                    = (known after apply)
+      + cpu_core_count                       = (known after apply)
+      + cpu_threads_per_core                 = (known after apply)
+      + disable_api_termination              = (known after apply)
+      + ebs_optimized                        = (known after apply)
+      + get_password_data                    = false
+      + host_id                              = (known after apply)
+      + id                                   = (known after apply)
+      + instance_initiated_shutdown_behavior = (known after apply)
+      + instance_state                       = (known after apply)
+      + instance_type                        = "t2.micro"
+      + ipv6_address_count                   = (known after apply)
+      + ipv6_addresses                       = (known after apply)
+      + key_name                             = (known after apply)
+      + monitoring                           = (known after apply)
+      + outpost_arn                          = (known after apply)
+      + password_data                        = (known after apply)
+      + placement_group                      = (known after apply)
+      + primary_network_interface_id         = (known after apply)
+      + private_dns                          = (known after apply)
+      + private_ip                           = (known after apply)
+      + public_dns                           = (known after apply)
+      + public_ip                            = (known after apply)
+      + secondary_private_ips                = (known after apply)
+      + security_groups                      = (known after apply)
+      + source_dest_check                    = true
+      + subnet_id                            = (known after apply)
+      + tags                                 = {
+          + "Name" = "TerraformWorkshops"
+        }
+      + tags_all                             = {
+          + "Name" = "TerraformWorkshops"
+        }
+      + tenancy                              = (known after apply)
+      + user_data                            = "5ab9f442a5001c89c3e281e3538db613cfff5950"
+      + user_data_base64                     = (known after apply)
+      + vpc_security_group_ids               = (known after apply)
+
+      + capacity_reservation_specification {
+          + capacity_reservation_preference = (known after apply)
+
+          + capacity_reservation_target {
+              + capacity_reservation_id = (known after apply)
+            }
+        }
+
+      + ebs_block_device {
+          + delete_on_termination = (known after apply)
+          + device_name           = (known after apply)
+          + encrypted             = (known after apply)
+          + iops                  = (known after apply)
+          + kms_key_id            = (known after apply)
+          + snapshot_id           = (known after apply)
+          + tags                  = (known after apply)
+          + throughput            = (known after apply)
+          + volume_id             = (known after apply)
+          + volume_size           = (known after apply)
+          + volume_type           = (known after apply)
+        }
+
+      + enclave_options {
+          + enabled = (known after apply)
+        }
+
+      + ephemeral_block_device {
+          + device_name  = (known after apply)
+          + no_device    = (known after apply)
+          + virtual_name = (known after apply)
+        }
+
+      + metadata_options {
+          + http_endpoint               = (known after apply)
+          + http_put_response_hop_limit = (known after apply)
+          + http_tokens                 = (known after apply)
+        }
+
+      + network_interface {
+          + delete_on_termination = (known after apply)
+          + device_index          = (known after apply)
+          + network_interface_id  = (known after apply)
+        }
+
+      + root_block_device {
+          + delete_on_termination = (known after apply)
+          + device_name           = (known after apply)
+          + encrypted             = (known after apply)
+          + iops                  = (known after apply)
+          + kms_key_id            = (known after apply)
+          + tags                  = (known after apply)
+          + throughput            = (known after apply)
+          + volume_id             = (known after apply)
+          + volume_size           = (known after apply)
+          + volume_type           = (known after apply)
+        }
+    }
+
+  # aws_security_group.web will be created
+  + resource "aws_security_group" "web" {
+      + arn                    = (known after apply)
+      + description            = "Managed by Terraform"
+      + egress                 = (known after apply)
+      + id                     = (known after apply)
+      + ingress                = [
+          + {
+              + cidr_blocks      = [
+                  + "0.0.0.0/0",
+                ]
+              + description      = ""
+              + from_port        = 5000
+              + ipv6_cidr_blocks = []
+              + prefix_list_ids  = []
+              + protocol         = "tcp"
+              + security_groups  = []
+              + self             = false
+              + to_port          = 5000
+            },
+        ]
+      + name                   = (known after apply)
+      + name_prefix            = (known after apply)
+      + owner_id               = (known after apply)
+      + revoke_rules_on_delete = false
+      + tags_all               = (known after apply)
+      + vpc_id                 = (known after apply)
+    }
+
+Plan: 2 to add, 0 to change, 0 to destroy.
+
+Changes to Outputs:
+  + instance_public_ip = (known after apply)
+aws_security_group.web: Creating...
+aws_security_group.web: Creation complete after 3s [id=sg-012b448a85576b023]
+aws_instance.web: Creating...
+aws_instance.web: Still creating... [10s elapsed]
+aws_instance.web: Still creating... [20s elapsed]
+aws_instance.web: Creation complete after 25s [id=i-0a7d753a4dd3bde46]
+
+Apply complete! Resources: 2 added, 0 changed, 0 destroyed.
+
+Outputs:
+
+instance_public_ip = "3.68.88.93"
+
+```
+
+```bash
+$ curl http://3.68.88.93:5000
+Hello, World
+```
 

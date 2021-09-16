@@ -1,6 +1,6 @@
 # 2. Elastic Compute Cloud
 
-## Basic commands
+## Terraform Basics
 
 ```
 $ mkdir terraform-workshops
@@ -52,6 +52,8 @@ resource "aws_instance" "web" {
 }
 ```
 {% endcode %}
+
+### Commands
 
 ```bash
 $ terraform init
@@ -490,7 +492,7 @@ aws_instance.web: Destruction complete after 31s
 Destroy complete! Resources: 1 destroyed.
 ```
 
-## Variables <a id="variables-and-outputs"></a>
+### Variables
 
 ```bash
 $ touch variables.tf
@@ -519,7 +521,7 @@ variable "instance_name" {
 ```
 {% endcode %}
 
-## Data Sources <a id="data-sources"></a>
+### Data Sources
 
 ```bash
 data "aws_ami" "ubuntu" {
@@ -570,7 +572,7 @@ data "aws_ami" "ubuntu" {
 ```
 {% endcode %}
 
-## Outputs
+### Outputs
 
 ```bash
 $ touch outputs.tf

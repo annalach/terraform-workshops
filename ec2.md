@@ -997,3 +997,5 @@ ubuntu@ip-172-31-7-84:~$ sudo apt-get update
 ubuntu@ip-172-31-7-84:~$ exit
 ```
 
+The example code from this section is available [here](https://github.com/annalach/terraform-workshops/tree/ec2-test-instance/terraform-workshops/ec2-test-instances).
+

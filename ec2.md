@@ -792,7 +792,6 @@ Apply complete! Resources: 2 added, 0 changed, 0 destroyed.
 Outputs:
 
 instance_public_ip = "3.68.88.93"
-
 ```
 
 ```bash
@@ -834,4 +833,167 @@ nohup busybox httpd -f -p ${port} &
 {% endcode %}
 
 The example code from this section is available [here](https://github.com/annalach/terraform-workshops/tree/master/terraform-workshops/ec2).
+
+## Test EC2
+
+```bash
+$ cd ..
+$ mkdir ec2-test-instances
+$ cd ec2-test-instances
+$ touch main.tf
+```
+
+```bash
+$ ssh-keygen -t rsa -b 2048 -C "ubuntu" -m PEM -f ~/myEC2KeyPair
+```
+
+{% code title="terraform-workshops/ec2-test-instances/main.tf" %}
+```bash
+terraform {
+  required_providers {
+    aws = {
+      source  = "hashicorp/aws"
+      version = "~> 3.27"
+    }
+  }
+
+  required_version = ">= 0.14.9"
+}
+
+provider "aws" {
+  profile = "default"
+  region  = "eu-central-1"
+}
+
+data "aws_ami" "ubuntu" {
+  most_recent = true
+
+  filter {
+    name   = "name"
+    values = ["ubuntu/images/hvm-ssd/ubuntu-focal-20.04-amd64-server-*"]
+  }
+
+  filter {
+    name   = "virtualization-type"
+    values = ["hvm"]
+  }
+
+  owners = ["099720109477"] # Canonical
+}
+
+resource "aws_security_group" "public_instances" {
+  description = "Security Group for instances in Public Subnet"
+
+  ingress {
+    description = "Allow SSH from everywhere"
+    protocol    = "tcp"
+    from_port   = 22
+    to_port     = 22
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+
+  egress {
+    description = "Allow outboud traffic on all ports"
+    protocol    = "-1"
+    from_port   = 0
+    to_port     = 0
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+}
+
+resource "aws_key_pair" "my_ec2_key_pair" {
+  key_name   = "my-ec2-key-pair"
+  public_key = file("~/myEC2KeyPair.pub")
+}
+
+resource "aws_instance" "public" {
+  ami                    = data.aws_ami.ubuntu.id
+  instance_type          = "t2.micro"
+  key_name               = aws_key_pair.my_ec2_key_pair.key_name
+  vpc_security_group_ids = [aws_security_group.public_instances.id]
+
+  tags = {
+    Name = "Instance in Public Subnet"
+  }
+}
+
+output "public_instance_public_ip" {
+  value = aws_instance.public.public_ip
+}
+```
+{% endcode %}
+
+```bash
+$ terraform init
+$ terraform apply
+
+Plan: 3 to add, 0 to change, 0 to destroy.
+
+Changes to Outputs:
+  + public_instance_public_ip = (known after apply)
+
+Do you want to perform these actions?
+  Terraform will perform the actions described above.
+  Only 'yes' will be accepted to approve.
+
+  Enter a value: yes
+
+aws_key_pair.my_ec2_key_pair: Creating...
+aws_security_group.public_instances: Creating...
+aws_key_pair.my_ec2_key_pair: Creation complete after 1s [id=my-ec2-key-pair]
+aws_security_group.public_instances: Creation complete after 3s [id=sg-056cb9a0d63a48b8c]
+aws_instance.public: Creating...
+aws_instance.public: Still creating... [10s elapsed]
+aws_instance.public: Still creating... [20s elapsed]
+aws_instance.public: Still creating... [30s elapsed]
+aws_instance.public: Creation complete after 36s [id=i-0520a6fa7872f1592]
+
+Apply complete! Resources: 3 added, 0 changed, 0 destroyed.
+
+Outputs:
+
+public_instance_public_ip = "3.68.224.164"
+```
+
+```bash
+$ ssh -i ~/myEC2KeyPair ubuntu@3.68.224.164
+
+Welcome to Ubuntu 20.04.3 LTS (GNU/Linux 5.11.0-1017-aws x86_64)
+
+ * Documentation:  https://help.ubuntu.com
+ * Management:     https://landscape.canonical.com
+ * Support:        https://ubuntu.com/advantage
+
+  System information as of Fri Sep 17 08:18:53 UTC 2021
+
+  System load:  0.3               Processes:             100
+  Usage of /:   16.9% of 7.69GB   Users logged in:       0
+  Memory usage: 20%               IPv4 address for eth0: 172.31.7.84
+  Swap usage:   0%
+
+1 update can be applied immediately.
+To see these additional updates run: apt list --upgradable
+
+
+The list of available updates is more than a week old.
+To check for new updates run: sudo apt update
+
+
+The programs included with the Ubuntu system are free software;
+the exact distribution terms for each program are described in the
+individual files in /usr/share/doc/*/copyright.
+
+Ubuntu comes with ABSOLUTELY NO WARRANTY, to the extent permitted by
+applicable law.
+
+To run a command as administrator (user "root"), use "sudo <command>".
+See "man sudo_root" for details.
+
+ubuntu@ip-172-31-7-84:~$
+```
+
+```bash
+ubuntu@ip-172-31-7-84:~$ sudo apt-get update
+ubuntu@ip-172-31-7-84:~$ exit
+```
 

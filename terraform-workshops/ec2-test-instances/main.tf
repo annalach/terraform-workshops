@@ -14,6 +14,14 @@ provider "aws" {
   region  = "eu-central-1"
 }
 
+data "terraform_remote_state" "vpc" {
+  backend = "local"
+
+  config = {
+    "path" = "../vpc/terraform.tfstate"
+  }
+}
+
 data "aws_ami" "ubuntu" {
   most_recent = true
 

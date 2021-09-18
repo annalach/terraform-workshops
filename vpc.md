@@ -87,11 +87,38 @@ resource "aws_route_table_association" "a" {
   subnet_id      = aws_subnet.public_subnet.id
   route_table_id = aws_route_table.public_route_table.id
 }
-
 ```
 {% endcode %}
 
 ```text
 $ terraform apply
 ```
+
+```text
+$ touch outputs.tf
+```
+
+{% code title="terraform-workshops/vpc/outputs.tf" %}
+```bash
+output "vpc_id" {
+  description = "The VPC Id"
+  value       = aws_vpc.vpc.id
+}
+
+output "public_subnet_id" {
+  description = "The Public Subnet Id"
+  value       = aws_subnet.public_subnet.id
+}
+
+output "public_subnet_cidr_block" {
+  description = "The Public Subnet CIDR"
+  value       = aws_subnet.public_subnet.cidr_block
+}
+
+output "private_subnet_id" {
+  description = "The Private Subnet Id"
+  value       = aws_subnet.private_subnet.id
+}
+```
+{% endcode %}
 

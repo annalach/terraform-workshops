@@ -1,5 +1,7 @@
 # 3. Virtual Private Cloud
 
+## VPC configuration
+
 ```text
 $ cd ..
 $ mkdir vpc
@@ -121,4 +123,6 @@ output "private_subnet_id" {
 }
 ```
 {% endcode %}
+
+## The terraform\_remote\_state Data Source
 

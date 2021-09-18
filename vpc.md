@@ -126,3 +126,26 @@ output "private_subnet_id" {
 
 ## The terraform\_remote\_state Data Source
 
+```bash
+$ cd ../ec2-test-instances
+```
+
+{% code title="terraform-workshops/ec2-test-instances/main.tf" %}
+```bash
+@@ -14,6 +14,14 @@ provider "aws" {
+   region  = "eu-central-1"
+ }
+ 
++data "terraform_remote_state" "vpc" {
++  backend = "local"
++
++  config = {
++    "path" = "../vpc/terraform.tfstate"
++  }
++}
++
+ data "aws_ami" "ubuntu" {
+   most_recent = true
+```
+{% endcode %}
+

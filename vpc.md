@@ -149,3 +149,162 @@ $ cd ../ec2-test-instances
 ```
 {% endcode %}
 
+{% code title="terraform-workshops/ec2-test-instances/main.tf" %}
+```bash
+@@ -39,6 +39,7 @@ data "aws_ami" "ubuntu" {
+ }
+ 
+ resource "aws_security_group" "public_instances" {
++  vpc_id      = data.terraform_remote_state.vpc.outputs.vpc_id
+   description = "Security Group for instances in Public Subnet"
+ 
+   ingress {
+@@ -58,6 +59,19 @@ resource "aws_security_group" "public_instances" {
+   }
+ }
+ 
++resource "aws_security_group" "private_instances" {
++  vpc_id      = data.terraform_remote_state.vpc.outputs.vpc_id
++  description = "Security Group for instances in Private Subnet"
++
++  ingress {
++    description = "Allow SSH from EC2 instance from Public Subnet"
++    protocol    = "tcp"
++    from_port   = 22
++    to_port     = 22
++    cidr_blocks = [data.terraform_remote_state.vpc.outputs.public_subnet_cidr_block]
++  }
++}
++
+ resource "aws_key_pair" "my_ec2_key_pair" {
+   key_name   = "my-ec2-key-pair"
+   public_key = file("~/myEC2KeyPair.pub")
+@@ -68,12 +82,29 @@ resource "aws_instance" "public" {
+   instance_type          = "t2.micro"
+   key_name               = aws_key_pair.my_ec2_key_pair.key_name
+   vpc_security_group_ids = [aws_security_group.public_instances.id]
++  subnet_id              = data.terraform_remote_state.vpc.outputs.public_subnet_id
+ 
+   tags = {
+     Name = "TerraformWorkshopsEC2InPublicSubnet"
+   }
+ }
+ 
++resource "aws_instance" "private" {
++  ami                    = data.aws_ami.ubuntu.id
++  instance_type          = "t2.micro"
++  key_name               = aws_key_pair.my_ec2_key_pair.key_name
++  vpc_security_group_ids = [aws_security_group.private_instances.id]
++  subnet_id              = data.terraform_remote_state.vpc.outputs.private_subnet_id
++
++  tags = {
++    Name = "TerraformWorkshopsEC2InPrivateSubnet"
++  }
++}
++
+ output "public_instance_public_ip" {
+   value = aws_instance.public.public_ip
+ }
++
++output "private_instance_private_ip" {
++  value = aws_instance.private.private_ip
++}
+```
+{% endcode %}
+
+```bash
+$ terraform apply
+
+Apply complete! Resources: 5 added, 0 changed, 0 destroyed.
+
+Outputs:
+
+private_instance_private_ip = "10.0.2.83"
+public_instance_public_ip = "35.156.147.217"
+```
+
+```bash
+$ scp -i ~/myEC2KeyPair ~/myEC2KeyPair ubuntu@35.156.147.217:~/myEC2KeyPair
+```
+
+```bash
+$ ssh -i ~/myEC2KeyPair ubuntu@35.156.147.217
+
+Welcome to Ubuntu 20.04.3 LTS (GNU/Linux 5.11.0-1017-aws x86_64)
+
+ * Documentation:  https://help.ubuntu.com
+ * Management:     https://landscape.canonical.com
+ * Support:        https://ubuntu.com/advantage
+
+  System information as of Sun Sep 19 08:26:17 UTC 2021
+
+  System load:  0.0               Processes:             97
+  Usage of /:   17.1% of 7.69GB   Users logged in:       0
+  Memory usage: 19%               IPv4 address for eth0: 10.0.1.115
+  Swap usage:   0%
+
+
+1 update can be applied immediately.
+To see these additional updates run: apt list --upgradable
+
+
+The list of available updates is more than a week old.
+To check for new updates run: sudo apt update
+
+To run a command as administrator (user "root"), use "sudo <command>".
+See "man sudo_root" for details.
+
+ubuntu@ip-10-0-1-115:~$ sudo apt-get update
+
+ubuntu@ip-10-0-1-115:~$ ls
+myEC2KeyPair
+
+ubuntu@ip-10-0-1-115:~$ ssh -i ~/myEC2KeyPair ubuntu@10.0.2.83
+
+Welcome to Ubuntu 20.04.3 LTS (GNU/Linux 5.11.0-1017-aws x86_64)
+
+ * Documentation:  https://help.ubuntu.com
+ * Management:     https://landscape.canonical.com
+ * Support:        https://ubuntu.com/advantage
+
+  System information as of Sun Sep 19 08:28:48 UTC 2021
+
+  System load:  0.0               Processes:             98
+  Usage of /:   17.1% of 7.69GB   Users logged in:       0
+  Memory usage: 19%               IPv4 address for eth0: 10.0.2.83
+  Swap usage:   0%
+
+1 update can be applied immediately.
+To see these additional updates run: apt list --upgradable
+
+
+The list of available updates is more than a week old.
+To check for new updates run: sudo apt update
+
+
+The programs included with the Ubuntu system are free software;
+the exact distribution terms for each program are described in the
+individual files in /usr/share/doc/*/copyright.
+
+Ubuntu comes with ABSOLUTELY NO WARRANTY, to the extent permitted by
+applicable law.
+
+To run a command as administrator (user "root"), use "sudo <command>".
+See "man sudo_root" for details.
+
+ubuntu@ip-10-0-2-83:~$ 
+
+# this will fail because the instance does not have access to Internet
+ubuntu@ip-10-0-2-83:~$ sudo apt-get update
+
+ubuntu@ip-10-0-2-83:~$ exit
+logout
+Connection to 10.0.2.83 closed.
+
+ubuntu@ip-10-0-1-115:~$ exit
+logout
+Connection to 35.156.147.217 closed.
+```
+
+The example code from this section is available [here](https://github.com/annalach/terraform-workshops/tree/vpc/terraform-workshops).
+

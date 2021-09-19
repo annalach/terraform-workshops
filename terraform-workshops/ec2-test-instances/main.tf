@@ -39,6 +39,7 @@ data "aws_ami" "ubuntu" {
 }
 
 resource "aws_security_group" "public_instances" {
+  vpc_id      = data.terraform_remote_state.vpc.outputs.vpc_id
   description = "Security Group for instances in Public Subnet"
 
   ingress {
@@ -58,6 +59,19 @@ resource "aws_security_group" "public_instances" {
   }
 }
 
+resource "aws_security_group" "private_instances" {
+  vpc_id      = data.terraform_remote_state.vpc.outputs.vpc_id
+  description = "Security Group for instances in Private Subnet"
+
+  ingress {
+    description = "Allow SSH from EC2 instance from Public Subnet"
+    protocol    = "tcp"
+    from_port   = 22
+    to_port     = 22
+    cidr_blocks = [data.terraform_remote_state.vpc.outputs.public_subnet_cidr_block]
+  }
+}
+
 resource "aws_key_pair" "my_ec2_key_pair" {
   key_name   = "my-ec2-key-pair"
   public_key = file("~/myEC2KeyPair.pub")
@@ -68,12 +82,29 @@ resource "aws_instance" "public" {
   instance_type          = "t2.micro"
   key_name               = aws_key_pair.my_ec2_key_pair.key_name
   vpc_security_group_ids = [aws_security_group.public_instances.id]
+  subnet_id              = data.terraform_remote_state.vpc.outputs.public_subnet_id
 
   tags = {
-    Name = "Instance in Public Subnet"
+    Name = "TerraformWorkshopsEC2InPublicSubnet"
+  }
+}
+
+resource "aws_instance" "private" {
+  ami                    = data.aws_ami.ubuntu.id
+  instance_type          = "t2.micro"
+  key_name               = aws_key_pair.my_ec2_key_pair.key_name
+  vpc_security_group_ids = [aws_security_group.private_instances.id]
+  subnet_id              = data.terraform_remote_state.vpc.outputs.private_subnet_id
+
+  tags = {
+    Name = "TerraformWorkshopsEC2InPrivateSubnet"
   }
 }
 
 output "public_instance_public_ip" {
   value = aws_instance.public.public_ip
+}
+
+output "private_instance_private_ip" {
+  value = aws_instance.private.private_ip
 }

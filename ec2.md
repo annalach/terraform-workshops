@@ -913,7 +913,7 @@ resource "aws_instance" "public" {
   vpc_security_group_ids = [aws_security_group.public_instances.id]
 
   tags = {
-    Name = "Instance in Public Subnet"
+    Name = "TerraformWorkshopsEC2InPublicSubnet"
   }
 }
 

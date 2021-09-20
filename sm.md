@@ -97,3 +97,5 @@ $ aws secretsmanager get-secret-value --secret-id arn:aws:secretsmanager:eu-cent
 }
 ```
 
+The example code from this section is available [here](https://github.com/annalach/terraform-workshops/tree/master/terraform-workshops/secrets).
+

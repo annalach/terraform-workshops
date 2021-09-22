@@ -22,6 +22,14 @@ data "terraform_remote_state" "vpc" {
   }
 }
 
+data "terraform_remote_state" "iam" {
+  backend = "local"
+
+  config = {
+    "path" = "../iam/terraform.tfstate"
+  }
+}
+
 data "aws_ami" "ubuntu" {
   most_recent = true
 
@@ -83,6 +91,7 @@ resource "aws_instance" "public" {
   key_name               = aws_key_pair.my_ec2_key_pair.key_name
   vpc_security_group_ids = [aws_security_group.public_instances.id]
   subnet_id              = data.terraform_remote_state.vpc.outputs.public_subnet_id
+  iam_instance_profile   = data.terraform_remote_state.iam.outputs.ec2_instance_profile_name
 
   tags = {
     Name = "TerraformWorkshopsEC2InPublicSubnet"
@@ -95,6 +104,7 @@ resource "aws_instance" "private" {
   key_name               = aws_key_pair.my_ec2_key_pair.key_name
   vpc_security_group_ids = [aws_security_group.private_instances.id]
   subnet_id              = data.terraform_remote_state.vpc.outputs.private_subnet_id
+  iam_instance_profile   = data.terraform_remote_state.iam.outputs.ec2_instance_profile_name
 
   tags = {
     Name = "TerraformWorkshopsEC2InPrivateSubnet"

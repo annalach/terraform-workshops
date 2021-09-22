@@ -142,5 +142,30 @@ ubuntu@ip-10-0-1-81:~$ aws --version
 ubuntu@ip-10-0-1-81:~$ aws secretsmanager get-secret-value --secret-id arn:aws:secretsmanager:eu-central-1:852046301552:secret:db-secret-G7kbe9TbeCI=-sMOQ9J --region eu-central-1
 ```
 
-Follow the ["Create an Amazon EBS-backed Linux AMI"](https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/creating-an-ami-ebs.html) tutorial to create AMI of EC2 instance with AWS CLI installed.
+Follow the ["Create an Amazon EBS-backed Linux AMI"](https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/creating-an-ami-ebs.html) tutorial to create AMI of EC2 instance with AWS CLI installed. Create an image with the name **myEC2TestInstance.**
+
+{% code title="terraform-workshops/ec2-test-instances/main.tf" %}
+```bash
+@@ -35,7 +35,7 @@ data "aws_ami" "ubuntu" {
+ 
+   filter {
+     name   = "name"
+-    values = ["ubuntu/images/hvm-ssd/ubuntu-focal-20.04-amd64-server-*"]
++    values = ["myEC2TestInstance"]
+   }
+ 
+   filter {
+@@ -43,7 +43,7 @@ data "aws_ami" "ubuntu" {
+     values = ["hvm"]
+   }
+ 
+-  owners = ["099720109477"] # Canonical
++  owners = ["self"]
+ }
+ 
+ resource "aws_security_group" "public_instances" {
+```
+{% endcode %}
+
+The example code from this section is available [here](https://github.com/annalach/terraform-workshops/tree/master/terraform-workshops).
 

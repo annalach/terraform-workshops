@@ -142,3 +142,5 @@ ubuntu@ip-10-0-1-81:~$ aws --version
 ubuntu@ip-10-0-1-81:~$ aws secretsmanager get-secret-value --secret-id arn:aws:secretsmanager:eu-central-1:852046301552:secret:db-secret-G7kbe9TbeCI=-sMOQ9J --region eu-central-1
 ```
 
+Follow the ["Create an Amazon EBS-backed Linux AMI"](https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/creating-an-ami-ebs.html) tutorial to create AMI of EC2 instance with AWS CLI installed.
+

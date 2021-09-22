@@ -35,7 +35,7 @@ data "aws_ami" "ubuntu" {
 
   filter {
     name   = "name"
-    values = ["ubuntu/images/hvm-ssd/ubuntu-focal-20.04-amd64-server-*"]
+    values = ["myEC2TestInstance"]
   }
 
   filter {
@@ -43,7 +43,7 @@ data "aws_ami" "ubuntu" {
     values = ["hvm"]
   }
 
-  owners = ["099720109477"] # Canonical
+  owners = ["self"]
 }
 
 resource "aws_security_group" "public_instances" {

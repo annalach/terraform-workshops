@@ -78,6 +78,14 @@ resource "aws_security_group" "private_instances" {
     to_port     = 22
     cidr_blocks = [data.terraform_remote_state.vpc.outputs.public_subnet_cidr_block]
   }
+
+  egress {
+    description = "Allow outboud traffic on all ports"
+    protocol    = "-1"
+    from_port   = 0
+    to_port     = 0
+    cidr_blocks = ["0.0.0.0/0"]
+  }
 }
 
 resource "aws_key_pair" "my_ec2_key_pair" {

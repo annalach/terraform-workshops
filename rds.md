@@ -1,2 +1,137 @@
 # 7. Relational Database Service
 
+{% code title="terraform-workshops/vpc/variables.tf" %}
+```bash
+variable "vpc_cidr_block" {
+  description = "The VPC cidr block"
+  type        = string
+  default     = "10.0.0.0/16"
+}
+
+variable "public_subnets_cidr_blocks" {
+  description = "Public subnets cidr blocks"
+  type        = list(string)
+  default     = ["10.0.1.0/24", "10.0.3.0/24"]
+}
+
+variable "private_subnets_cidr_blocks" {
+  description = "Private subnets cidr blocks"
+  type        = list(string)
+  default     = ["10.0.2.0/24", "10.0.4.0/24"]
+}
+```
+{% endcode %}
+
+{% code title="terraform-workshops/vpc/outputs.tf" %}
+```bash
+@@ -3,17 +3,22 @@ output "vpc_id" {
+   value       = aws_vpc.vpc.id
+ }
+ 
+-output "public_subnet_id" {
+-  description = "The Public Subnet Id"
+-  value       = aws_subnet.public_subnet.id
++output "public_subnets_ids" {
++  value       = aws_subnet.public_subnets.*.id
++  description = "Public Subnets' Ids"
+ }
+ 
+-output "public_subnet_cidr_block" {
+-  description = "The Public Subnet CIDR"
+-  value       = aws_subnet.public_subnet.cidr_block
++output "private_subnet_ids" {
++  value       = aws_subnet.private_subnets.*.id
++  description = "Private Subnets' Ids"
+ }
+ 
+-output "private_subnet_id" {
+-  description = "The Private Subnet Id"
+-  value       = aws_subnet.private_subnet.id
++output "public_subnets_cidr_blocks" {
++  value       = aws_subnet.public_subnets.*.cidr_block
++  description = "Public Subnets' CIDR blocks"
++}
++
++output "private_subnets_cidr_blocks" {
++  value       = aws_subnet.private_subnets.*.cidr_block
++  description = "Private Subnets' CIDR blocks"
+ }
+```
+{% endcode %}
+
+```bash
+@@ -19,7 +19,7 @@ data "aws_availability_zones" "available" {
+ }
+ 
+ resource "aws_vpc" "vpc" {
+-  cidr_block           = "10.0.0.0/16"
++  cidr_block           = var.vpc_cidr_block
+   enable_dns_support   = true
+   enable_dns_hostnames = true
+ 
+@@ -28,10 +28,12 @@ resource "aws_vpc" "vpc" {
+   }
+ }
+ 
+-resource "aws_subnet" "public_subnet" {
++resource "aws_subnet" "public_subnets" {
++  count = length(var.public_subnets_cidr_blocks)
++
+   vpc_id                  = aws_vpc.vpc.id
+-  cidr_block              = "10.0.1.0/24"
+-  availability_zone       = data.aws_availability_zones.available.names[0]
++  cidr_block              = var.public_subnets_cidr_blocks[count.index]
++  availability_zone       = data.aws_availability_zones.available.names[count.index]
+   map_public_ip_on_launch = true
+ 
+   tags = {
+@@ -39,10 +41,12 @@ resource "aws_subnet" "public_subnet" {
+   }
+ }
+ 
+-resource "aws_subnet" "private_subnet" {
++resource "aws_subnet" "private_subnets" {
++  count = length(var.private_subnets_cidr_blocks)
++
+   vpc_id            = aws_vpc.vpc.id
+-  cidr_block        = "10.0.2.0/24"
+-  availability_zone = data.aws_availability_zones.available.names[0]
++  cidr_block        = var.private_subnets_cidr_blocks[count.index]
++  availability_zone = data.aws_availability_zones.available.names[count.index]
+ 
+   tags = {
+     Name = "TerraformWorkshopsPrivateSubnet"
+@@ -70,8 +74,10 @@ resource "aws_route_table" "public_route_table" {
+   }
+ }
+ 
+-resource "aws_route_table_association" "a" {
+-  subnet_id      = aws_subnet.public_subnet.id
++resource "aws_route_table_association" "public" {
++  count = length(aws_subnet.public_subnets)
++
++  subnet_id      = aws_subnet.public_subnets[count.index].id
+   route_table_id = aws_route_table.public_route_table.id
+ }
+ 
+@@ -84,7 +90,7 @@ resource "aws_security_group" "sm_vpc_endpoint" {
+     protocol    = "tcp"
+     from_port   = 443
+     to_port     = 443
+-    cidr_blocks = [aws_subnet.private_subnet.cidr_block, aws_subnet.public_subnet.cidr_block]
++    cidr_blocks = concat(aws_subnet.private_subnets.*.cidr_block, aws_subnet.public_subnets.*.cidr_block)
+   }
+ }
+ 
+@@ -98,7 +104,6 @@ resource "aws_vpc_endpoint" "sm" {
+     aws_security_group.sm_vpc_endpoint.id
+   ]
+ 
+-  subnet_ids = [
+-    aws_subnet.private_subnet.id
+-  ]
++  subnet_ids = aws_subnet.private_subnets.*.id
++
+ }
+```
+

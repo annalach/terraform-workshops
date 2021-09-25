@@ -212,6 +212,7 @@ resource "aws_db_instance" "rds" {
 ```
 {% endcode %}
 
+{% code title="terraform-workshops/ec2-test-instances/main.tf" %}
 ```bash
 @@ -76,7 +76,7 @@ resource "aws_security_group" "private_instances" {
      protocol    = "tcp"
@@ -241,6 +242,7 @@ resource "aws_db_instance" "rds" {
 
    tags = {
 ```
+{% endcode %}
 
 ```bash
 $ sudo apt-get install postgresql-client

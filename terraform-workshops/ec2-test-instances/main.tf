@@ -35,7 +35,7 @@ data "aws_ami" "ubuntu" {
 
   filter {
     name   = "name"
-    values = ["myEC2TestInstance"]
+    values = ["ubuntu/images/hvm-ssd/ubuntu-focal-20.04-amd64-server-*"]
   }
 
   filter {
@@ -43,7 +43,7 @@ data "aws_ami" "ubuntu" {
     values = ["hvm"]
   }
 
-  owners = ["self"]
+  owners = ["099720109477"] # Canonical
 }
 
 resource "aws_security_group" "public_instances" {
@@ -76,7 +76,7 @@ resource "aws_security_group" "private_instances" {
     protocol    = "tcp"
     from_port   = 22
     to_port     = 22
-    cidr_blocks = [data.terraform_remote_state.vpc.outputs.public_subnet_cidr_block]
+    cidr_blocks = data.terraform_remote_state.vpc.outputs.public_subnets_cidr_blocks
   }
 
   egress {
@@ -98,7 +98,7 @@ resource "aws_instance" "public" {
   instance_type          = "t2.micro"
   key_name               = aws_key_pair.my_ec2_key_pair.key_name
   vpc_security_group_ids = [aws_security_group.public_instances.id]
-  subnet_id              = data.terraform_remote_state.vpc.outputs.public_subnet_id
+  subnet_id              = data.terraform_remote_state.vpc.outputs.public_subnets_ids[0]
   iam_instance_profile   = data.terraform_remote_state.iam.outputs.ec2_instance_profile_name
 
   tags = {
@@ -111,7 +111,7 @@ resource "aws_instance" "private" {
   instance_type          = "t2.micro"
   key_name               = aws_key_pair.my_ec2_key_pair.key_name
   vpc_security_group_ids = [aws_security_group.private_instances.id]
-  subnet_id              = data.terraform_remote_state.vpc.outputs.private_subnet_id
+  subnet_id              = data.terraform_remote_state.vpc.outputs.private_subnet_ids[0]
   iam_instance_profile   = data.terraform_remote_state.iam.outputs.ec2_instance_profile_name
 
   tags = {

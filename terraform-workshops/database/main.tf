@@ -55,14 +55,18 @@ resource "aws_security_group" "rds" {
 }
 
 resource "aws_db_instance" "rds" {
-  instance_class         = "db.t3.micro"
+  instance_class         = "db.t2.micro"
   allocated_storage      = 5
   engine                 = "postgres"
-  engine_version         = "13.1"
+  engine_version         = "12"
   name                   = jsondecode(data.aws_secretsmanager_secret_version.db_secret.secret_string).name
   username               = jsondecode(data.aws_secretsmanager_secret_version.db_secret.secret_string).username
   password               = jsondecode(data.aws_secretsmanager_secret_version.db_secret.secret_string).password
   db_subnet_group_name   = aws_db_subnet_group.rds.name
   vpc_security_group_ids = [aws_security_group.rds.id]
   skip_final_snapshot    = true
+
+  tags = {
+    Name = "TerraformWorkshopsRDS"
+  }
 }

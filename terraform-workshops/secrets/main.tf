@@ -14,16 +14,6 @@ provider "aws" {
   region  = "eu-central-1"
 }
 
-resource "random_string" "name" {
-  length  = 16
-  special = false
-}
-
-resource "random_string" "username" {
-  length  = 16
-  special = false
-}
-
 resource "random_password" "password" {
   length           = 16
   special          = true
@@ -41,8 +31,8 @@ resource "aws_secretsmanager_secret" "db_secret" {
 resource "aws_secretsmanager_secret_version" "db_secret_version" {
   secret_id = aws_secretsmanager_secret.db_secret.id
   secret_string = jsonencode({
-    name     = random_string.name.result
-    username = random_string.username.result
+    name     = "terraform-workshops"
+    username = "terraform-workshops"
     password = random_password.password.result
   })
 }

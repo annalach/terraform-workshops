@@ -212,6 +212,14 @@ resource "aws_db_instance" "rds" {
 ```
 {% endcode %}
 
+{% code title="terraform-workshops/database/outputs.tf" %}
+```bash
+output "endpoint" {
+  value = aws_db_instance.rds.endpoint
+}
+```
+{% endcode %}
+
 {% code title="terraform-workshops/ec2-test-instances/main.tf" %}
 ```bash
 @@ -76,7 +76,7 @@ resource "aws_security_group" "private_instances" {
@@ -245,8 +253,36 @@ resource "aws_db_instance" "rds" {
 {% endcode %}
 
 ```bash
-$ sudo apt-get install postgresql-client
+$ sudo apt-get update
+$ sudo apt-get install awscli postgresql-client
+
+$ aws --version
+aws-cli/1.18.69 Python/3.8.10 Linux/5.11.0-1017-aws botocore/1.16.19
+
 $ psql --version
+psql (PostgreSQL) 12.8 (Ubuntu 12.8-0ubuntu0.20.04.1)
+```
+
+```bash
+$ ubuntu@ip-10-0-2-189:~$ aws secretsmanager get-secret-value --secret-id arn:aws:secretsmanager:eu-central-1:852046301552:secret:db-secret-otksHwf8j24=-F5QduR --region eu-central-1
+
+{
+    "ARN": "arn:aws:secretsmanager:eu-central-1:852046301552:secret:db-secret-otksHwf8j24=-F5QduR",
+    "Name": "db-secret-otksHwf8j24=",
+    "VersionId": "02FEA862-98B3-4033-AD40-150FA235D463",
+    "SecretString": "{\"name\":\"workshops\",\"password\":\"AH_G1FRVdQUKLptF\",\"username\":\"workshops\"}",
+    "VersionStages": [
+        "AWSCURRENT"
+    ],
+    "CreatedDate": 1632683698.451
+}
+
+ubuntu@ip-10-0-2-189:~$ psql postgresql://workshops:AH_G1FRVdQUKLptF@terraform-20210926192005192800000003.csiqwc1tjv12.eu-central-1.rds.amazonaws.com:5432/workshops -c 'select now()'
+
+              now              
+-------------------------------
+ 2021-09-26 19:50:23.001753+00
+(1 row)
 ```
 
 

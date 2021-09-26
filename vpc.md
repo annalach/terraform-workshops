@@ -2,18 +2,11 @@
 
 ## VPC configuration
 
-```text
-$ cd ..
-$ mkdir vpc
-$ cd vpc
-$ touch main.tf
-```
-
 ```bash
 $ terraform init
 ```
 
-{% code title="terraform-workshops/vpc/mainf.tf" %}
+{% code title="terraform/vpc/mainf.tf" %}
 ```bash
 terraform {
   required_providers {
@@ -100,7 +93,7 @@ $ terraform apply
 $ touch outputs.tf
 ```
 
-{% code title="terraform-workshops/vpc/outputs.tf" %}
+{% code title="terraform/vpc/outputs.tf" %}
 ```bash
 output "vpc_id" {
   description = "The VPC Id"
@@ -126,11 +119,7 @@ output "private_subnet_id" {
 
 ## The terraform\_remote\_state Data Source
 
-```bash
-$ cd ../ec2-test-instances
-```
-
-{% code title="terraform-workshops/ec2-test-instances/main.tf" %}
+{% code title="terraform/ec2-test-instances/main.tf" %}
 ```bash
 @@ -14,6 +14,14 @@ provider "aws" {
    region  = "eu-central-1"
@@ -149,7 +138,7 @@ $ cd ../ec2-test-instances
 ```
 {% endcode %}
 
-{% code title="terraform-workshops/ec2-test-instances/main.tf" %}
+{% code title="terraform/ec2-test-instances/main.tf" %}
 ```bash
 @@ -39,6 +39,7 @@ data "aws_ami" "ubuntu" {
  }

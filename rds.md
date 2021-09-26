@@ -1,6 +1,6 @@
 # 7. Relational Database Service
 
-{% code title="terraform-workshops/vpc/variables.tf" %}
+{% code title="terraform/vpc/variables.tf" %}
 ```bash
 variable "vpc_cidr_block" {
   description = "The VPC cidr block"
@@ -22,7 +22,7 @@ variable "private_subnets_cidr_blocks" {
 ```
 {% endcode %}
 
-{% code title="terraform-workshops/vpc/outputs.tf" %}
+{% code title="terraform/vpc/outputs.tf" %}
 ```bash
 @@ -3,17 +3,22 @@ output "vpc_id" {
    value       = aws_vpc.vpc.id
@@ -135,7 +135,7 @@ variable "private_subnets_cidr_blocks" {
  }
 ```
 
-{% code title="terraform-workshops/database/main.tf" %}
+{% code title="terraform/database/main.tf" %}
 ```bash
 terraform {
   required_providers {
@@ -211,4 +211,79 @@ resource "aws_db_instance" "rds" {
 }
 ```
 {% endcode %}
+
+{% code title="terraform/database/outputs.tf" %}
+```bash
+output "endpoint" {
+  value = aws_db_instance.rds.endpoint
+}
+```
+{% endcode %}
+
+{% code title="terraform/ec2-test-instances/main.tf" %}
+```bash
+@@ -76,7 +76,7 @@ resource "aws_security_group" "private_instances" {
+     protocol    = "tcp"
+     from_port   = 22
+     to_port     = 22
+-    cidr_blocks = [data.terraform_remote_state.vpc.outputs.public_subnet_cidr_block]
++    cidr_blocks = data.terraform_remote_state.vpc.outputs.public_subnets_cidr_blocks
+   }
+
+   egress {
+@@ -98,7 +98,7 @@ resource "aws_instance" "public" {
+   instance_type          = "t2.micro"
+   key_name               = aws_key_pair.my_ec2_key_pair.key_name
+   vpc_security_group_ids = [aws_security_group.public_instances.id]
+-  subnet_id              = data.terraform_remote_state.vpc.outputs.public_subnet_id
++  subnet_id              = data.terraform_remote_state.vpc.outputs.public_subnets_ids[0]
+   iam_instance_profile   = data.terraform_remote_state.iam.outputs.ec2_instance_profile_name
+
+   tags = {
+@@ -111,7 +111,7 @@ resource "aws_instance" "private" {
+   instance_type          = "t2.micro"
+   key_name               = aws_key_pair.my_ec2_key_pair.key_name
+   vpc_security_group_ids = [aws_security_group.private_instances.id]
+-  subnet_id              = data.terraform_remote_state.vpc.outputs.private_subnet_id
++  subnet_id              = data.terraform_remote_state.vpc.outputs.private_subnet_ids[0]
+   iam_instance_profile   = data.terraform_remote_state.iam.outputs.ec2_instance_profile_name
+
+   tags = {
+```
+{% endcode %}
+
+```bash
+$ sudo apt-get update
+$ sudo apt-get install awscli postgresql-client
+
+$ aws --version
+aws-cli/1.18.69 Python/3.8.10 Linux/5.11.0-1017-aws botocore/1.16.19
+
+$ psql --version
+psql (PostgreSQL) 12.8 (Ubuntu 12.8-0ubuntu0.20.04.1)
+```
+
+```bash
+$ ubuntu@ip-10-0-2-189:~$ aws secretsmanager get-secret-value --secret-id arn:aws:secretsmanager:eu-central-1:852046301552:secret:db-secret-otksHwf8j24=-F5QduR --region eu-central-1
+
+{
+    "ARN": "arn:aws:secretsmanager:eu-central-1:852046301552:secret:db-secret-otksHwf8j24=-F5QduR",
+    "Name": "db-secret-otksHwf8j24=",
+    "VersionId": "02FEA862-98B3-4033-AD40-150FA235D463",
+    "SecretString": "{\"name\":\"workshops\",\"password\":\"AH_G1FRVdQUKLptF\",\"username\":\"workshops\"}",
+    "VersionStages": [
+        "AWSCURRENT"
+    ],
+    "CreatedDate": 1632683698.451
+}
+
+ubuntu@ip-10-0-2-189:~$ psql postgresql://workshops:AH_G1FRVdQUKLptF@terraform-20210926192005192800000003.csiqwc1tjv12.eu-central-1.rds.amazonaws.com:5432/workshops -c 'select now()'
+
+              now              
+-------------------------------
+ 2021-09-26 19:50:23.001753+00
+(1 row)
+```
+
+
 

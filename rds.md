@@ -1,6 +1,6 @@
 # 7. Relational Database Service
 
-{% code title="terraform-workshops/vpc/variables.tf" %}
+{% code title="terraform/vpc/variables.tf" %}
 ```bash
 variable "vpc_cidr_block" {
   description = "The VPC cidr block"
@@ -22,7 +22,7 @@ variable "private_subnets_cidr_blocks" {
 ```
 {% endcode %}
 
-{% code title="terraform-workshops/vpc/outputs.tf" %}
+{% code title="terraform/vpc/outputs.tf" %}
 ```bash
 @@ -3,17 +3,22 @@ output "vpc_id" {
    value       = aws_vpc.vpc.id
@@ -135,7 +135,7 @@ variable "private_subnets_cidr_blocks" {
  }
 ```
 
-{% code title="terraform-workshops/database/main.tf" %}
+{% code title="terraform/database/main.tf" %}
 ```bash
 terraform {
   required_providers {
@@ -212,7 +212,7 @@ resource "aws_db_instance" "rds" {
 ```
 {% endcode %}
 
-{% code title="terraform-workshops/database/outputs.tf" %}
+{% code title="terraform/database/outputs.tf" %}
 ```bash
 output "endpoint" {
   value = aws_db_instance.rds.endpoint
@@ -220,7 +220,7 @@ output "endpoint" {
 ```
 {% endcode %}
 
-{% code title="terraform-workshops/ec2-test-instances/main.tf" %}
+{% code title="terraform/ec2-test-instances/main.tf" %}
 ```bash
 @@ -76,7 +76,7 @@ resource "aws_security_group" "private_instances" {
      protocol    = "tcp"

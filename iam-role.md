@@ -1,12 +1,6 @@
 # 5. IAM Role
 
-```text
-$ mkdir iam
-$ cd iam
-$ touch main.tf
-```
-
-{% code title="terraform-workshops/iam/main.tf" %}
+{% code title="terraform/iam/main.tf" %}
 ```bash
 terraform {
   required_providers {
@@ -77,7 +71,7 @@ EOT
 $ touch outputs.tf
 ```
 
-{% code title="terraform-workshops/iam/outputs.tf" %}
+{% code title="terraform/iam/outputs.tf" %}
 ```bash
 output "ec2_instance_profile_name" {
   value = aws_iam_instance_profile.ec2_profile.name
@@ -96,7 +90,7 @@ Outputs:
 ec2_instance_profile_name = "terraform-workshops-ec2-profile"
 ```
 
-{% code title="terraform-workshops/ec2-test-instances/main.tf" %}
+{% code title="terraform/ec2-test-instances/main.tf" %}
 ```bash
 @@ -22,6 +22,14 @@ data "terraform_remote_state" "vpc" {
    }
@@ -144,7 +138,7 @@ ubuntu@ip-10-0-1-81:~$ aws secretsmanager get-secret-value --secret-id arn:aws:s
 
 Follow the ["Create an Amazon EBS-backed Linux AMI"](https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/creating-an-ami-ebs.html) tutorial to create AMI of EC2 instance with AWS CLI installed. Create an image with the name **myEC2TestInstance.**
 
-{% code title="terraform-workshops/ec2-test-instances/main.tf" %}
+{% code title="terraform/ec2-test-instances/main.tf" %}
 ```bash
 @@ -35,7 +35,7 @@ data "aws_ami" "ubuntu" {
  

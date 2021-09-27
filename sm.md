@@ -1,6 +1,12 @@
 # 4. Secrets Manager
 
-{% code title="terraform/secrets/mainf.tf" %}
+```bash
+$ mkdir secrets
+$ cd secrets
+$ touch main.tf
+```
+
+{% code title="terraform-workshops/secrets/mainf.tf" %}
 ```bash
 terraform {
   required_providers {
@@ -57,7 +63,7 @@ resource "aws_secretsmanager_secret_version" "db_secret_version" {
 $ touch outputs.tf
 ```
 
-{% code title="terraform/secrets/outputs.tf" %}
+{% code title="terraform-workshops/secrets/outputs.tf" %}
 ```bash
 output "db_secert_arn" {
   value = aws_secretsmanager_secret_version.db_secret_version.arn

@@ -2,7 +2,13 @@
 
 ## Terraform Basics
 
-{% code title=".gitignore" %}
+```
+$ mkdir terraform-workshops
+$ cd terraform-workshops
+$ touch .gitignore
+```
+
+{% code title="terraform-workshops/.gitignore" %}
 ```bash
 .terraform
 *.tfstate
@@ -12,7 +18,13 @@
 ```
 {% endcode %}
 
-{% code title="terraform/ec2/mainf.tf" %}
+```bash
+$ mkdir ec2
+$ cd ec2
+$ touch main.tf
+```
+
+{% code title="terraform-workshops/ec2/mainf.tf" %}
 ```bash
 terraform {
   required_providers {
@@ -188,7 +200,7 @@ aws_instance.web: Creation complete after 35s [id=i-0090a8e6cfe9585c6]
 Apply complete! Resources: 1 added, 0 changed, 0 destroyed.
 ```
 
-{% code title="terraform/ec2/main.tf" %}
+{% code title="terraform-workshops/ec2/main.tf" %}
 ```bash
 @@ -19,6 +19,6 @@ resource "aws_instance" "web" {
    instance_type = "t2.micro"
@@ -239,7 +251,7 @@ Do you want to perform these actions?
   Enter a value:
 ```
 
-{% code title="terraform/ec2/main.tf" %}
+{% code title="terraform-workshops/ec2/main.tf" %}
 ```bash
 @@ -15,7 +15,7 @@ provider "aws" {
  }
@@ -486,7 +498,7 @@ Destroy complete! Resources: 1 destroyed.
 $ touch variables.tf
 ```
 
-{% code title="terraform/ec2/variables.tf" %}
+{% code title="terraform-workshops/ec2/variables.tf" %}
 ```bash
 variable "instance_name" {
   description = "Value of the Name tag for the EC instance"
@@ -496,7 +508,7 @@ variable "instance_name" {
 ```
 {% endcode %}
 
-{% code title="terraform/ec2/main.tf" %}
+{% code title="terraform-workshops/ec2/main.tf" %}
 ```bash
 @@ -19,6 +19,6 @@ resource "aws_instance" "web" {
    instance_type = "t2.micro"
@@ -529,7 +541,7 @@ data "aws_ami" "ubuntu" {
 }
 ```
 
-{% code title="terraform/ec2/main.tf" %}
+{% code title="terraform-workshops/ec2/main.tf" %}
 ```bash
 @@ -14,8 +14,24 @@ provider "aws" {
    region  = "eu-central-1"
@@ -566,7 +578,7 @@ data "aws_ami" "ubuntu" {
 $ touch outputs.tf
 ```
 
-{% code title="terraform/ec2/outputs.tf" %}
+{% code title="terraform-workshops/ec2/outputs.tf" %}
 ```bash
 output "instance_public_ip" {
   description = "Publi IP address of the EC2 instace"
@@ -577,7 +589,7 @@ output "instance_public_ip" {
 
 ## Simple Web Server
 
-{% code title="terraform/ec2/variables.tf" %}
+{% code title="terraform-workshops/ec2/variables.tf" %}
 ```bash
 @@ -3,3 +3,9 @@ variable "instance_name" {
    type        = string
@@ -592,7 +604,7 @@ output "instance_public_ip" {
 ```
 {% endcode %}
 
-{% code title="terraform/ec2/main.tf" %}
+{% code title="terraform-workshops/ec2/main.tf" %}
 ```bash
 @@ -30,9 +30,28 @@ data "aws_ami" "ubuntu" {
    owners = ["099720109477"] # Canonical
@@ -791,7 +803,7 @@ Hello, World
 $ touch user_data.sh
 ```
 
-{% code title="terraform/ec2/user\_data.sh" %}
+{% code title="terraform-workshops/ec2/user\_data.sh" %}
 ```bash
 #!/bin/bash
 echo "Hello, World" > index.html
@@ -801,7 +813,7 @@ nohup busybox httpd -f -p ${port} &
 
 [templatefile](https://www.terraform.io/docs/language/functions/templatefile.html) function
 
-{% code title="terraform/ec2/main.tf" %}
+{% code title="terraform-workshops/ec2/main.tf" %}
 ```bash
 @@ -46,12 +46,7 @@ resource "aws_instance" "web" {
    instance_type          = "t2.micro"
@@ -825,10 +837,17 @@ The example code from this section is available [here](https://github.com/annala
 ## Test EC2
 
 ```bash
+$ cd ..
+$ mkdir ec2-test-instances
+$ cd ec2-test-instances
+$ touch main.tf
+```
+
+```bash
 $ ssh-keygen -t rsa -b 2048 -C "ubuntu" -m PEM -f ~/myEC2KeyPair
 ```
 
-{% code title="terraform/ec2-test-instances/main.tf" %}
+{% code title="terraform-workshops/ec2-test-instances/main.tf" %}
 ```bash
 terraform {
   required_providers {

@@ -22,7 +22,7 @@ variable "cluster_max_size" {
 ```
 {% endcode %}
 
-{% code title="terraform/webserver-cluster/mainf.tf" %}
+{% code title="terraform/webserver-cluster/main.tf" %}
 ```bash
 terraform {
   required_providers {

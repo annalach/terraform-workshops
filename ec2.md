@@ -2,13 +2,16 @@
 
 ## Terraform Basics
 
-```
-$ mkdir terraform-workshops
-$ cd terraform-workshops
-$ touch .gitignore
-```
+During these workshops, you will use the default `local` backend. A backend is a place where:
 
-{% code title="terraform-workshops/.gitignore" %}
+* the state of your infrastructure is stored,
+* operations are performed.
+
+ The state is kept in JSON format in a file with `tfstate` extension. It stores all information about your infrastructure, including **sensitive data** like database credentials. Due to this fact, the state shouldn't be kept in a version control system. 
+
+Create a directory on your computer for these workshops. I will refer to this directory as a **root directory**. Inside it, create `.gitignore` file with the following content:
+
+{% code title=".gitignore" %}
 ```bash
 .terraform
 *.tfstate
@@ -18,13 +21,9 @@ $ touch .gitignore
 ```
 {% endcode %}
 
-```bash
-$ mkdir ec2
-$ cd ec2
-$ touch main.tf
-```
+Besides the state files, I want you to ignore `.terraform` directories Terraform will create. You can think about it like `node_modules` in a JavaScript project. It stores the dependencies required by your project. Like NPM creates a `package-lock.json` file to represent the dependencies you declared, Terraform will create `.terraform.lock.hcl` file you should keep in your VCS.
 
-{% code title="terraform-workshops/ec2/mainf.tf" %}
+{% code title="terraform/ec2/mainf.tf" %}
 ```bash
 terraform {
   required_providers {
@@ -73,6 +72,10 @@ $ terraform plan
 
 ```bash
 $ terraform apply
+```
+
+```bash
+$ terraform state list
 ```
 
 ```bash
@@ -200,7 +203,7 @@ aws_instance.web: Creation complete after 35s [id=i-0090a8e6cfe9585c6]
 Apply complete! Resources: 1 added, 0 changed, 0 destroyed.
 ```
 
-{% code title="terraform-workshops/ec2/main.tf" %}
+{% code title="terraform/ec2/main.tf" %}
 ```bash
 @@ -19,6 +19,6 @@ resource "aws_instance" "web" {
    instance_type = "t2.micro"
@@ -251,7 +254,7 @@ Do you want to perform these actions?
   Enter a value:
 ```
 
-{% code title="terraform-workshops/ec2/main.tf" %}
+{% code title="terraform/ec2/main.tf" %}
 ```bash
 @@ -15,7 +15,7 @@ provider "aws" {
  }
@@ -494,11 +497,7 @@ Destroy complete! Resources: 1 destroyed.
 
 ### Variables
 
-```bash
-$ touch variables.tf
-```
-
-{% code title="terraform-workshops/ec2/variables.tf" %}
+{% code title="terraform/ec2/variables.tf" %}
 ```bash
 variable "instance_name" {
   description = "Value of the Name tag for the EC instance"
@@ -508,7 +507,7 @@ variable "instance_name" {
 ```
 {% endcode %}
 
-{% code title="terraform-workshops/ec2/main.tf" %}
+{% code title="terraform/ec2/main.tf" %}
 ```bash
 @@ -19,6 +19,6 @@ resource "aws_instance" "web" {
    instance_type = "t2.micro"
@@ -541,7 +540,7 @@ data "aws_ami" "ubuntu" {
 }
 ```
 
-{% code title="terraform-workshops/ec2/main.tf" %}
+{% code title="terraform/ec2/main.tf" %}
 ```bash
 @@ -14,8 +14,24 @@ provider "aws" {
    region  = "eu-central-1"
@@ -578,7 +577,7 @@ data "aws_ami" "ubuntu" {
 $ touch outputs.tf
 ```
 
-{% code title="terraform-workshops/ec2/outputs.tf" %}
+{% code title="terraform/ec2/outputs.tf" %}
 ```bash
 output "instance_public_ip" {
   description = "Publi IP address of the EC2 instace"
@@ -589,7 +588,7 @@ output "instance_public_ip" {
 
 ## Simple Web Server
 
-{% code title="terraform-workshops/ec2/variables.tf" %}
+{% code title="terraform/ec2/variables.tf" %}
 ```bash
 @@ -3,3 +3,9 @@ variable "instance_name" {
    type        = string
@@ -604,7 +603,7 @@ output "instance_public_ip" {
 ```
 {% endcode %}
 
-{% code title="terraform-workshops/ec2/main.tf" %}
+{% code title="terraform/ec2/main.tf" %}
 ```bash
 @@ -30,9 +30,28 @@ data "aws_ami" "ubuntu" {
    owners = ["099720109477"] # Canonical
@@ -800,10 +799,14 @@ Hello, World
 ```
 
 ```bash
+$ terraform output
+```
+
+```bash
 $ touch user_data.sh
 ```
 
-{% code title="terraform-workshops/ec2/user\_data.sh" %}
+{% code title="terraform/ec2/user\_data.sh" %}
 ```bash
 #!/bin/bash
 echo "Hello, World" > index.html
@@ -813,7 +816,7 @@ nohup busybox httpd -f -p ${port} &
 
 [templatefile](https://www.terraform.io/docs/language/functions/templatefile.html) function
 
-{% code title="terraform-workshops/ec2/main.tf" %}
+{% code title="terraform/ec2/main.tf" %}
 ```bash
 @@ -46,12 +46,7 @@ resource "aws_instance" "web" {
    instance_type          = "t2.micro"
@@ -831,171 +834,4 @@ nohup busybox httpd -f -p ${port} &
      Name = var.instance_name
 ```
 {% endcode %}
-
-The example code from this section is available [here](https://github.com/annalach/terraform-workshops/tree/master/terraform-workshops/ec2).
-
-## Test EC2
-
-```bash
-$ cd ..
-$ mkdir ec2-test-instances
-$ cd ec2-test-instances
-$ touch main.tf
-```
-
-```bash
-$ ssh-keygen -t rsa -b 2048 -C "ubuntu" -m PEM -f ~/myEC2KeyPair
-```
-
-{% code title="terraform-workshops/ec2-test-instances/main.tf" %}
-```bash
-terraform {
-  required_providers {
-    aws = {
-      source  = "hashicorp/aws"
-      version = "~> 3.27"
-    }
-  }
-
-  required_version = ">= 0.14.9"
-}
-
-provider "aws" {
-  profile = "default"
-  region  = "eu-central-1"
-}
-
-data "aws_ami" "ubuntu" {
-  most_recent = true
-
-  filter {
-    name   = "name"
-    values = ["ubuntu/images/hvm-ssd/ubuntu-focal-20.04-amd64-server-*"]
-  }
-
-  filter {
-    name   = "virtualization-type"
-    values = ["hvm"]
-  }
-
-  owners = ["099720109477"] # Canonical
-}
-
-resource "aws_security_group" "public_instances" {
-  description = "Security Group for instances in Public Subnet"
-
-  ingress {
-    description = "Allow SSH from everywhere"
-    protocol    = "tcp"
-    from_port   = 22
-    to_port     = 22
-    cidr_blocks = ["0.0.0.0/0"]
-  }
-
-  egress {
-    description = "Allow outboud traffic on all ports"
-    protocol    = "-1"
-    from_port   = 0
-    to_port     = 0
-    cidr_blocks = ["0.0.0.0/0"]
-  }
-}
-
-resource "aws_key_pair" "my_ec2_key_pair" {
-  key_name   = "my-ec2-key-pair"
-  public_key = file("~/myEC2KeyPair.pub")
-}
-
-resource "aws_instance" "public" {
-  ami                    = data.aws_ami.ubuntu.id
-  instance_type          = "t2.micro"
-  key_name               = aws_key_pair.my_ec2_key_pair.key_name
-  vpc_security_group_ids = [aws_security_group.public_instances.id]
-
-  tags = {
-    Name = "TerraformWorkshopsEC2InPublicSubnet"
-  }
-}
-
-output "public_instance_public_ip" {
-  value = aws_instance.public.public_ip
-}
-```
-{% endcode %}
-
-```bash
-$ terraform init
-$ terraform apply
-
-Plan: 3 to add, 0 to change, 0 to destroy.
-
-Changes to Outputs:
-  + public_instance_public_ip = (known after apply)
-
-Do you want to perform these actions?
-  Terraform will perform the actions described above.
-  Only 'yes' will be accepted to approve.
-
-  Enter a value: yes
-
-aws_key_pair.my_ec2_key_pair: Creating...
-aws_security_group.public_instances: Creating...
-aws_key_pair.my_ec2_key_pair: Creation complete after 1s [id=my-ec2-key-pair]
-aws_security_group.public_instances: Creation complete after 3s [id=sg-056cb9a0d63a48b8c]
-aws_instance.public: Creating...
-aws_instance.public: Still creating... [10s elapsed]
-aws_instance.public: Still creating... [20s elapsed]
-aws_instance.public: Still creating... [30s elapsed]
-aws_instance.public: Creation complete after 36s [id=i-0520a6fa7872f1592]
-
-Apply complete! Resources: 3 added, 0 changed, 0 destroyed.
-
-Outputs:
-
-public_instance_public_ip = "3.68.224.164"
-```
-
-```bash
-$ ssh -i ~/myEC2KeyPair ubuntu@3.68.224.164
-
-Welcome to Ubuntu 20.04.3 LTS (GNU/Linux 5.11.0-1017-aws x86_64)
-
- * Documentation:  https://help.ubuntu.com
- * Management:     https://landscape.canonical.com
- * Support:        https://ubuntu.com/advantage
-
-  System information as of Fri Sep 17 08:18:53 UTC 2021
-
-  System load:  0.3               Processes:             100
-  Usage of /:   16.9% of 7.69GB   Users logged in:       0
-  Memory usage: 20%               IPv4 address for eth0: 172.31.7.84
-  Swap usage:   0%
-
-1 update can be applied immediately.
-To see these additional updates run: apt list --upgradable
-
-
-The list of available updates is more than a week old.
-To check for new updates run: sudo apt update
-
-
-The programs included with the Ubuntu system are free software;
-the exact distribution terms for each program are described in the
-individual files in /usr/share/doc/*/copyright.
-
-Ubuntu comes with ABSOLUTELY NO WARRANTY, to the extent permitted by
-applicable law.
-
-To run a command as administrator (user "root"), use "sudo <command>".
-See "man sudo_root" for details.
-
-ubuntu@ip-172-31-7-84:~$
-```
-
-```bash
-ubuntu@ip-172-31-7-84:~$ sudo apt-get update
-ubuntu@ip-172-31-7-84:~$ exit
-```
-
-The example code from this section is available [here](https://github.com/annalach/terraform-workshops/tree/ec2-test-instance/terraform-workshops/ec2-test-instances).
 

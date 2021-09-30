@@ -23,6 +23,8 @@ Create a directory on your computer for these workshops. I will refer to this di
 
 Besides the state files, I want you to ignore `.terraform` directories Terraform will create. You can think about it like `node_modules` in a JavaScript project. It stores the dependencies required by your project. Like NPM creates a `package-lock.json` file to represent the dependencies you declared, Terraform will create `.terraform.lock.hcl` file you should keep in your VCS.
 
+In your root directory create `terraform` directory. Inside it, create `ec2` directory with `main.tf` file and add the following code:
+
 {% code title="terraform/ec2/mainf.tf" %}
 ```bash
 terraform {
@@ -51,6 +53,8 @@ resource "aws_instance" "web" {
 }
 ```
 {% endcode %}
+
+The `terraform {}` block contains settings, including AWS provider installed from [Terraform Registry](https://registry.terraform.io/). Providers are plugins 
 
 ### Commands
 

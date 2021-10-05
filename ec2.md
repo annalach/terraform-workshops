@@ -206,7 +206,7 @@ Apply complete! Resources: 1 added, 0 changed, 0 destroyed.
 
 Go to[ EC2 Dashboard on AWS Console](https://console.aws.amazon.com/ec2/v2/home?region=eu-central-1) to see created EC2 instance.
 
-Depending on the type of change you want to do, Terraform will perform an update in-place \(e.g tag update\) or destroy and then create a replacement \(e.g AMI change\).
+Depending on the type of change you want to do, Terraform will perform an update in-place \(e.g tag change\) or destroy and then create a replacement \(e.g AMI change\).
 
 {% code title="terraform/ec2/main.tf" %}
 ```bash
@@ -488,7 +488,7 @@ aws_instance.web: Destruction complete after 31s
 Destroy complete! Resources: 1 destroyed.
 ```
 
-Let's deploy a simple webserver.
+The `main.tf` file contains hard-coded values. Create `variables.tf` file and add the following content to define an input variable:
 
 {% code title="terraform/ec2/variables.tf" %}
 ```bash
@@ -499,6 +499,8 @@ variable "instance_name" {
 }
 ```
 {% endcode %}
+
+Now, update `main.tf` file to use the input variable:
 
 {% code title="terraform/ec2/main.tf" %}
 ```bash
@@ -512,6 +514,8 @@ variable "instance_name" {
  }
 ```
 {% endcode %}
+
+Next, I want you to get rid of the hard-coded `ami` value. To do this you will use a [data source](https://www.terraform.io/docs/language/data-sources/index.html) functionality to get the latest Ubuntu Amazon Machine Image. Here is an example of such a data source:
 
 ```bash
 data "aws_ami" "ubuntu" {
@@ -530,6 +534,8 @@ data "aws_ami" "ubuntu" {
   owners = ["099720109477"] # Canonical
 }
 ```
+
+Use this in your `main.tf` file:
 
 {% code title="terraform/ec2/main.tf" %}
 ```bash
@@ -562,9 +568,7 @@ data "aws_ami" "ubuntu" {
 ```
 {% endcode %}
 
-```bash
-$ touch outputs.tf
-```
+It would be great to know the public IP address of the server without visiting AWS Console. Add `outputs.tf` file and define output in it:
 
 {% code title="terraform/ec2/outputs.tf" %}
 ```bash
@@ -574,6 +578,10 @@ output "instance_public_ip" {
 }
 ```
 {% endcode %}
+
+Let's make your EC2 just a little useful and make a web server from it 😂. Please:
+
+Add `server_port` variable to `variables.tf` file:
 
 {% code title="terraform/ec2/variables.tf" %}
 ```bash
@@ -589,6 +597,16 @@ output "instance_public_ip" {
 +}
 ```
 {% endcode %}
+
+In `main.tf`:
+
+* add `aws_security_group` resource to configure [Security Group](https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/ec2-security-groups.html). It acts as a virtual firewall for EC2 instances to control incoming and outgoing traffic. Your security group should have a rule that allows incoming traffic at the port you specified as `server_port` variable.
+* add vpc\_security\_group\_ids to assign the security group to your EC2 instance.
+* add `user_data` script that fires up a web server using busybox tool \(installed by default on Ubuntu\).
+
+  `<<-EOT` is [Indented Heredocs](https://www.terraform.io/docs/language/expressions/strings.html#indented-heredocs) which allows you to use multi-line indented strings. In this string is possible to pass variable using [interpolation](https://www.terraform.io/docs/language/expressions/strings.html#interpolation) \(`${...}`\). nohup & 
+
+  
 
 {% code title="terraform/ec2/main.tf" %}
 ```bash

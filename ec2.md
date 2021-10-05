@@ -1,7 +1,5 @@
 # 2. Elastic Compute Cloud
 
-## Terraform Basics
-
 During these workshops, you will use the default `local` backend. A backend is a place where:
 
 * the state of your infrastructure is stored,
@@ -23,9 +21,9 @@ Create a directory on your computer for these workshops. I will refer to this di
 
 Besides the state files, I want you to ignore `.terraform` directories Terraform will create. You can think about it like `node_modules` in a JavaScript project. It stores the dependencies required by your project. Like NPM creates a `package-lock.json` file to represent the dependencies you declared, Terraform will create `.terraform.lock.hcl` file you should keep in your VCS.
 
-In your root directory create `terraform` directory. Inside it, create `ec2` directory with `main.tf` file and add the following code:
+In your root directory create `terraform` directory. Inside it, create `ec2` directory with `main.tf` file and add the following code to it:
 
-{% code title="terraform/ec2/mainf.tf" %}
+{% code title="terraform/ec2/main.tf" %}
 ```bash
 terraform {
   required_providers {
@@ -54,35 +52,34 @@ resource "aws_instance" "web" {
 ```
 {% endcode %}
 
-The `terraform {}` block contains settings, including AWS provider installed from [Terraform Registry](https://registry.terraform.io/). Providers are plugins 
+The `terraform {}` block contains settings, including AWS provider installed from [Terraform Registry](https://registry.terraform.io/). Providers are plugins that implement resource types. The examples use AWS Provider to create resources on AWS Cloud in `eu-central-1` region \(Europe, Frankfurt\) using AWS CLI `default` profile.
 
-### Commands
+[aws\_instance](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/instance) resource creates [Elastic Compute Cloud \(EC2\)](https://aws.amazon.com/ec2) instance \(virtual server\).
+
+In the `ec2` directory, run [`terraform init`](https://www.terraform.io/docs/cli/commands/init.html) command in your terminal to initialize a working directory containing Terraform configuration files.
 
 ```bash
 $ terraform init
 ```
 
-```bash
-$ terraform fmt
-```
+Now you can use [`terraform fmt`](https://www.terraform.io/docs/cli/commands/fmt.html) command to format Terraform configurations files and [`terraform validate`](https://www.terraform.io/docs/cli/commands/validate.html) to validate them.
 
 ```bash
+$ terraform fmt
 $ terraform validate
 ```
+
+Once validation succeeded you can use [`terraform plan`](https://www.terraform.io/docs/cli/commands/plan.html) command to see what Terraform needs to do to achieve described infrastructure.
 
 ```bash
 $ terraform plan
 ```
 
+Run [`terraform apply`](https://www.terraform.io/docs/cli/commands/apply.html) command to deploy your resources. Verify displayed execution plan and type `yes` to confirm.
+
 ```bash
 $ terraform apply
-```
 
-```bash
-$ terraform state list
-```
-
-```bash
 Terraform used the selected providers to generate the following execution plan. Resource actions are indicated with the
 following symbols:
   + create
@@ -207,6 +204,10 @@ aws_instance.web: Creation complete after 35s [id=i-0090a8e6cfe9585c6]
 Apply complete! Resources: 1 added, 0 changed, 0 destroyed.
 ```
 
+Go to[ EC2 Dashboard on AWS Console](https://console.aws.amazon.com/ec2/v2/home?region=eu-central-1) to see created EC2 instance.
+
+Depending on the type of change you want to do, Terraform will perform an update in-place \(e.g tag update\) or destroy and then create a replacement \(e.g AMI change\).
+
 {% code title="terraform/ec2/main.tf" %}
 ```bash
 @@ -19,6 +19,6 @@ resource "aws_instance" "web" {
@@ -250,12 +251,6 @@ Terraform will perform the following actions:
     }
 
 Plan: 0 to add, 1 to change, 0 to destroy.
-
-Do you want to perform these actions?
-  Terraform will perform the actions described above.
-  Only 'yes' will be accepted to approve.
-
-  Enter a value:
 ```
 
 {% code title="terraform/ec2/main.tf" %}
@@ -389,19 +384,13 @@ Terraform will perform the following actions:
     }
 
 Plan: 1 to add, 0 to change, 1 to destroy.
-
-Do you want to perform these actions?
-  Terraform will perform the actions described above.
-  Only 'yes' will be accepted to approve.
-
-  Enter a value:
 ```
+
+Execute [`terraform destroy`](https://www.terraform.io/docs/cli/commands/destroy.html) command in order to delete your resources.
 
 ```bash
 $ terraform destroy
-```
 
-```bash
 aws_instance.web: Refreshing state... [id=i-0090a8e6cfe9585c6]
 
 Terraform used the selected providers to generate the following execution plan. Resource actions are indicated with the following
@@ -499,8 +488,6 @@ aws_instance.web: Destruction complete after 31s
 Destroy complete! Resources: 1 destroyed.
 ```
 
-### Variables
-
 {% code title="terraform/ec2/variables.tf" %}
 ```bash
 variable "instance_name" {
@@ -523,8 +510,6 @@ variable "instance_name" {
  }
 ```
 {% endcode %}
-
-### Data Sources
 
 ```bash
 data "aws_ami" "ubuntu" {
@@ -575,8 +560,6 @@ data "aws_ami" "ubuntu" {
 ```
 {% endcode %}
 
-### Outputs
-
 ```bash
 $ touch outputs.tf
 ```
@@ -589,8 +572,6 @@ output "instance_public_ip" {
 }
 ```
 {% endcode %}
-
-## Simple Web Server
 
 {% code title="terraform/ec2/variables.tf" %}
 ```bash

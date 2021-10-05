@@ -1,6 +1,6 @@
 # 6. VPC Endpoint
 
-{% code title="terraform/vpc/mainf.tf" %}
+{% code title="terraform-workshops/vpc/mainf.tf" %}
 ```bash
 @@ -19,7 +19,9 @@ data "aws_availability_zones" "available" {
  }
@@ -48,7 +48,7 @@
 ```
 {% endcode %}
 
-{% code title="terraform/ec2-test-instances/main.tf" %}
+{% code title="terraform-workshops/ec2-test-instances/main.tf" %}
 ```bash
 @@ -78,6 +78,14 @@ resource "aws_security_group" "private_instances" {
      to_port     = 22

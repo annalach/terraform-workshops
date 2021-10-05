@@ -488,6 +488,8 @@ aws_instance.web: Destruction complete after 31s
 Destroy complete! Resources: 1 destroyed.
 ```
 
+Let's deploy a simple webserver.
+
 {% code title="terraform/ec2/variables.tf" %}
 ```bash
 variable "instance_name" {

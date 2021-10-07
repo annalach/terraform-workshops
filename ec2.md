@@ -21,9 +21,9 @@ Create a directory on your computer for these workshops. I will refer to this di
 
 Besides the state files, I want you to ignore `.terraform` directories Terraform will create. You can think about it like `node_modules` in a JavaScript project. It stores the dependencies required by your project. Like NPM creates a `package-lock.json` file to represent the dependencies you declared, Terraform will create `.terraform.lock.hcl` file you should keep in your VCS.
 
-In your root directory create `terraform` directory. Inside it, create `ec2` directory with `main.tf` file and add the following code to it:
+In your root directory create `terraform` directory. Inside it, create `webserver` directory with `main.tf` file and add the following code to it:
 
-{% code title="terraform/ec2/main.tf" %}
+{% code title="terraform/webserver/main.tf" %}
 ```bash
 terraform {
   required_providers {
@@ -41,7 +41,7 @@ provider "aws" {
   region  = "eu-central-1"
 }
 
-resource "aws_instance" "web" {
+resource "aws_instance" "webserver" {
   ami           = "ami-091f21ecba031b39a"
   instance_type = "t2.micro"
 
@@ -49,6 +49,7 @@ resource "aws_instance" "web" {
     Name = "TerraformWorkshops"
   }
 }
+
 ```
 {% endcode %}
 
@@ -80,14 +81,13 @@ Run [`terraform apply`](https://www.terraform.io/docs/cli/commands/apply.html) c
 ```bash
 $ terraform apply
 
-Terraform used the selected providers to generate the following execution plan. Resource actions are indicated with the
-following symbols:
+Terraform used the selected providers to generate the following execution plan. Resource actions are indicated with the following symbols:
   + create
 
 Terraform will perform the following actions:
 
-  # aws_instance.web will be created
-  + resource "aws_instance" "web" {
+  # aws_instance.webserver will be created
+  + resource "aws_instance" "webserver" {
       + ami                                  = "ami-091f21ecba031b39a"
       + arn                                  = (known after apply)
       + associate_public_ip_address          = (known after apply)
@@ -195,22 +195,19 @@ Do you want to perform these actions?
 
   Enter a value: yes
 
-aws_instance.web: Creating...
-aws_instance.web: Still creating... [10s elapsed]
-aws_instance.web: Still creating... [20s elapsed]
-aws_instance.web: Still creating... [30s elapsed]
-aws_instance.web: Creation complete after 35s [id=i-0090a8e6cfe9585c6]
+aws_instance.webserver: Creating...
+aws_instance.webserver: Still creating... [10s elapsed]
+aws_instance.webserver: Still creating... [20s elapsed]
+aws_instance.webserver: Creation complete after 25s [id=i-08839e4a788d49081]
 
 Apply complete! Resources: 1 added, 0 changed, 0 destroyed.
 ```
 
-Go to[ EC2 Dashboard on AWS Console](https://console.aws.amazon.com/ec2/v2/home?region=eu-central-1) to see created EC2 instance.
-
 Depending on the type of change you want to do, Terraform will perform an update in-place \(e.g tag change\) or destroy and then create a replacement \(e.g AMI change\).
 
-{% code title="terraform/ec2/main.tf" %}
+{% code title="terraform/webserver/main.tf" %}
 ```bash
-@@ -19,6 +19,6 @@ resource "aws_instance" "web" {
+@@ -19,6 +19,6 @@ resource "aws_instance" "webserver" {
    instance_type = "t2.micro"
  
    tags = {
@@ -222,19 +219,18 @@ Depending on the type of change you want to do, Terraform will perform an update
 {% endcode %}
 
 ```bash
-$ terraform apply
+$ terraform plan
 
-aws_instance.web: Refreshing state... [id=i-0090a8e6cfe9585c6]
+aws_instance.webserver: Refreshing state... [id=i-08839e4a788d49081]
 
-Terraform used the selected providers to generate the following execution plan. Resource actions are indicated with the following
-symbols:
+Terraform used the selected providers to generate the following execution plan. Resource actions are indicated with the following symbols:
   ~ update in-place
 
 Terraform will perform the following actions:
 
-  # aws_instance.web will be updated in-place
-  ~ resource "aws_instance" "web" {
-        id                                   = "i-0090a8e6cfe9585c6"
+  # aws_instance.webserver will be updated in-place
+  ~ resource "aws_instance" "webserver" {
+        id                                   = "i-08839e4a788d49081"
       ~ tags                                 = {
           ~ "Name" = "TerraformWorkshops" -> "TerraformWorkshops2021"
         }
@@ -253,12 +249,12 @@ Terraform will perform the following actions:
 Plan: 0 to add, 1 to change, 0 to destroy.
 ```
 
-{% code title="terraform/ec2/main.tf" %}
+{% code title="terraform/webserver/main.tf" %}
 ```bash
 @@ -15,7 +15,7 @@ provider "aws" {
  }
  
- resource "aws_instance" "web" {
+ resource "aws_instance" "webserver" {
 -  ami           = "ami-091f21ecba031b39a"
 +  ami           = "ami-0db60716f1f6291f6"
    instance_type = "t2.micro"
@@ -268,29 +264,28 @@ Plan: 0 to add, 1 to change, 0 to destroy.
 {% endcode %}
 
 ```bash
-$ terraform apply
+$ terraform plan
 
-aws_instance.web: Refreshing state... [id=i-0090a8e6cfe9585c6]
+aws_instance.webserver: Refreshing state... [id=i-08839e4a788d49081]
 
-Terraform used the selected providers to generate the following execution plan. Resource actions are indicated with the following
-symbols:
+Terraform used the selected providers to generate the following execution plan. Resource actions are indicated with the following symbols:
 -/+ destroy and then create replacement
 
 Terraform will perform the following actions:
 
-  # aws_instance.web must be replaced
--/+ resource "aws_instance" "web" {
+  # aws_instance.webserver must be replaced
+-/+ resource "aws_instance" "webserver" {
       ~ ami                                  = "ami-091f21ecba031b39a" -> "ami-0db60716f1f6291f6" # forces replacement
-      ~ arn                                  = "arn:aws:ec2:eu-central-1:852046301552:instance/i-0090a8e6cfe9585c6" -> (known after apply)
+      ~ arn                                  = "arn:aws:ec2:eu-central-1:852046301552:instance/i-08839e4a788d49081" -> (known after apply)
       ~ associate_public_ip_address          = true -> (known after apply)
-      ~ availability_zone                    = "eu-central-1c" -> (known after apply)
+      ~ availability_zone                    = "eu-central-1b" -> (known after apply)
       ~ cpu_core_count                       = 1 -> (known after apply)
       ~ cpu_threads_per_core                 = 1 -> (known after apply)
       ~ disable_api_termination              = false -> (known after apply)
       ~ ebs_optimized                        = false -> (known after apply)
       - hibernation                          = false -> null
       + host_id                              = (known after apply)
-      ~ id                                   = "i-0090a8e6cfe9585c6" -> (known after apply)
+      ~ id                                   = "i-08839e4a788d49081" -> (known after apply)
       ~ instance_initiated_shutdown_behavior = "stop" -> (known after apply)
       ~ instance_state                       = "running" -> (known after apply)
       ~ ipv6_address_count                   = 0 -> (known after apply)
@@ -300,16 +295,16 @@ Terraform will perform the following actions:
       + outpost_arn                          = (known after apply)
       + password_data                        = (known after apply)
       + placement_group                      = (known after apply)
-      ~ primary_network_interface_id         = "eni-0b6e156a8fff620fb" -> (known after apply)
-      ~ private_dns                          = "ip-172-31-12-110.eu-central-1.compute.internal" -> (known after apply)
-      ~ private_ip                           = "172.31.12.110" -> (known after apply)
-      ~ public_dns                           = "ec2-35-158-107-0.eu-central-1.compute.amazonaws.com" -> (known after apply)
-      ~ public_ip                            = "35.158.107.0" -> (known after apply)
+      ~ primary_network_interface_id         = "eni-0c00d93c22f267d41" -> (known after apply)
+      ~ private_dns                          = "ip-172-31-47-85.eu-central-1.compute.internal" -> (known after apply)
+      ~ private_ip                           = "172.31.47.85" -> (known after apply)
+      ~ public_dns                           = "ec2-3-64-124-13.eu-central-1.compute.amazonaws.com" -> (known after apply)
+      ~ public_ip                            = "3.64.124.13" -> (known after apply)
       ~ secondary_private_ips                = [] -> (known after apply)
       ~ security_groups                      = [
           - "default",
         ] -> (known after apply)
-      ~ subnet_id                            = "subnet-5959c815" -> (known after apply)
+      ~ subnet_id                            = "subnet-008b097c" -> (known after apply)
         tags                                 = {
             "Name" = "TerraformWorkshops"
         }
@@ -377,7 +372,7 @@ Terraform will perform the following actions:
           + kms_key_id            = (known after apply)
           ~ tags                  = {} -> (known after apply)
           ~ throughput            = 0 -> (known after apply)
-          ~ volume_id             = "vol-081b37c28bbaaf1c6" -> (known after apply)
+          ~ volume_id             = "vol-086579969b9b52122" -> (known after apply)
           ~ volume_size           = 8 -> (known after apply)
           ~ volume_type           = "gp2" -> (known after apply)
         }
@@ -386,106 +381,164 @@ Terraform will perform the following actions:
 Plan: 1 to add, 0 to change, 1 to destroy.
 ```
 
+Go to[ EC2 Dashboard on AWS Console](https://console.aws.amazon.com/ec2/v2/home?region=eu-central-1) to see created EC2 instance. 
+
+{% hint style="info" %}
+The EC2 instance is created in the default VPC and assigned to the default Security Group \(you can think about it as a virtual firewall\) that controls incoming and outgoing traffic. By default Security Group has rules that allow communication between resources in this Security Group.
+{% endhint %}
+
+Let's create SSH key pair and use it to connect to the EC2 instance.
+
+```bash
+$ ssh-keygen -t rsa -b 2048 -C "ubuntu" -m PEM -f ~/myEC2KeyPair
+```
+
+Make the following update:
+
+{% code title="terraform/webserver/main.tf" %}
+```bash
+@@ -14,9 +14,44 @@ provider "aws" {
+   region  = "eu-central-1"
+ }
+ 
++resource "aws_security_group" "webserver" {
++  description = "Security group for webserver"
++
++  ingress {
++    description = "Allow SSH from everywhere"
++    protocol    = "tcp"
++    from_port   = 22
++    to_port     = 22
++    cidr_blocks = ["0.0.0.0/0"]
++  }
++
++  ingress {
++    description = "Allow inbound on port 5000"
++    protocol    = "tcp"
++    from_port   = 5000
++    to_port     = 5000
++    cidr_blocks = ["0.0.0.0/0"]
++  }
++
++  egress {
++    description = "Allow outboud traffic on all ports"
++    protocol    = "-1"
++    from_port   = 0
++    to_port     = 0
++    cidr_blocks = ["0.0.0.0/0"]
++  }
++}
++
++resource "aws_key_pair" "my_ec2_key_pair" {
++  key_name   = "my-ec2-key-pair"
++  public_key = file("~/myEC2KeyPair.pub")
++}
++
+ resource "aws_instance" "webserver" {
+-  ami           = "ami-091f21ecba031b39a"
+-  instance_type = "t2.micro"
++  ami                    = "ami-091f21ecba031b39a"
++  instance_type          = "t2.micro"
++  key_name               = aws_key_pair.my_ec2_key_pair.key_name
++  vpc_security_group_ids = [aws_security_group.webserver.id]
+ 
+   tags = {
+     Name = "TerraformWorkshops"
+```
+{% endcode %}
+
+Run `terraform apply` command to update your resources.
+
+Once changes are done, go to AWS Console and find the public IP address of your instance and connect via SSH \(make sure to use your EC2 instance IP address instead of `3.120.139.14`\):
+
+```bash
+$ ssh -i ~/myEC2KeyPair ubuntu@3.120.139.14
+
+Welcome to Ubuntu 20.04.3 LTS (GNU/Linux 5.11.0-1017-aws x86_64)
+
+ * Documentation:  https://help.ubuntu.com
+ * Management:     https://landscape.canonical.com
+ * Support:        https://ubuntu.com/advantage
+
+  System information as of Thu Oct  7 20:23:51 UTC 2021
+
+  System load:  0.08              Processes:             97
+  Usage of /:   16.9% of 7.69GB   Users logged in:       0
+  Memory usage: 19%               IPv4 address for eth0: 172.31.40.78
+  Swap usage:   0%
+
+1 update can be applied immediately.
+To see these additional updates run: apt list --upgradable
+
+
+The list of available updates is more than a week old.
+To check for new updates run: sudo apt update
+
+
+The programs included with the Ubuntu system are free software;
+the exact distribution terms for each program are described in the
+individual files in /usr/share/doc/*/copyright.
+
+Ubuntu comes with ABSOLUTELY NO WARRANTY, to the extent permitted by
+applicable law.
+
+To run a command as administrator (user "root"), use "sudo <command>".
+See "man sudo_root" for details.
+
+ubuntu@ip-172-31-40-78:~$
+```
+
+Verify if the instance can connect to the Internet by running `sudo apt-get update` command:
+
+```bash
+ubuntu@ip-172-31-40-78:~$ sudo apt-get update
+```
+
+Now let's fire up a simple webserver:
+
+```bash
+ubuntu@ip-172-31-40-78:~$ echo "Hello, World" > index.html
+ubuntu@ip-172-31-40-78:~$ nohup busybox httpd -f -p 5000 &
+```
+
+From another terminal window use curl to send a GET request at the public IP address of your EC2 instance and port 5000:
+
+```bash
+$ curl http://3.120.139.14:5000
+Hello, World
+```
+
+Exit EC2 instance:
+
+```bash
+ubuntu@ip-172-31-40-78:~$ exit
+logout
+Connection to 3.120.139.14 closed.
+```
+
+Let's make life easier and create:
+
+*  `user_data` script that will fire up webserver when an EC2 instance is up
+*  `output` that will give us a public IP address of an instance
+* `variable` to define server port and use it in security group's ingress rule and user data script
+
+We can polish the config by using:
+
+* `data source` to get the latest Ubuntu Amazon Machine Image ID value
+* `templatefile` function to move bash script to a separate file
+
+{% code title="terraform/webserver/user\_data.sh" %}
+```bash
+#!/bin/bash
+echo "Hello, World" > index.html
+nohup busybox httpd -f -p ${port} &
+```
+{% endcode %}
+
 Execute [`terraform destroy`](https://www.terraform.io/docs/cli/commands/destroy.html) command in order to delete your resources.
 
 ```bash
 $ terraform destroy
-
-aws_instance.web: Refreshing state... [id=i-0090a8e6cfe9585c6]
-
-Terraform used the selected providers to generate the following execution plan. Resource actions are indicated with the following
-symbols:
-  - destroy
-
-Terraform will perform the following actions:
-
-  # aws_instance.web will be destroyed
-  - resource "aws_instance" "web" {
-      - ami                                  = "ami-091f21ecba031b39a" -> null
-      - arn                                  = "arn:aws:ec2:eu-central-1:852046301552:instance/i-0090a8e6cfe9585c6" -> null
-      - associate_public_ip_address          = true -> null
-      - availability_zone                    = "eu-central-1c" -> null
-      - cpu_core_count                       = 1 -> null
-      - cpu_threads_per_core                 = 1 -> null
-      - disable_api_termination              = false -> null
-      - ebs_optimized                        = false -> null
-      - get_password_data                    = false -> null
-      - hibernation                          = false -> null
-      - id                                   = "i-0090a8e6cfe9585c6" -> null
-      - instance_initiated_shutdown_behavior = "stop" -> null
-      - instance_state                       = "running" -> null
-      - instance_type                        = "t2.micro" -> null
-      - ipv6_address_count                   = 0 -> null
-      - ipv6_addresses                       = [] -> null
-      - monitoring                           = false -> null
-      - primary_network_interface_id         = "eni-0b6e156a8fff620fb" -> null
-      - private_dns                          = "ip-172-31-12-110.eu-central-1.compute.internal" -> null
-      - private_ip                           = "172.31.12.110" -> null
-      - public_dns                           = "ec2-35-158-107-0.eu-central-1.compute.amazonaws.com" -> null
-      - public_ip                            = "35.158.107.0" -> null
-      - secondary_private_ips                = [] -> null
-      - security_groups                      = [
-          - "default",
-        ] -> null
-      - source_dest_check                    = true -> null
-      - subnet_id                            = "subnet-5959c815" -> null
-      - tags                                 = {
-          - "Name" = "TerraformWorkshops"
-        } -> null
-      - tags_all                             = {
-          - "Name" = "TerraformWorkshops"
-        } -> null
-      - tenancy                              = "default" -> null
-      - vpc_security_group_ids               = [
-          - "sg-181f6d6f",
-        ] -> null
-
-      - capacity_reservation_specification {
-          - capacity_reservation_preference = "open" -> null
-        }
-
-      - credit_specification {
-          - cpu_credits = "standard" -> null
-        }
-
-      - enclave_options {
-          - enabled = false -> null
-        }
-
-      - metadata_options {
-          - http_endpoint               = "enabled" -> null
-          - http_put_response_hop_limit = 1 -> null
-          - http_tokens                 = "optional" -> null
-        }
-
-      - root_block_device {
-          - delete_on_termination = true -> null
-          - device_name           = "/dev/sda1" -> null
-          - encrypted             = false -> null
-          - iops                  = 100 -> null
-          - tags                  = {} -> null
-          - throughput            = 0 -> null
-          - volume_id             = "vol-081b37c28bbaaf1c6" -> null
-          - volume_size           = 8 -> null
-          - volume_type           = "gp2" -> null
-        }
-    }
-
-Plan: 0 to add, 0 to change, 1 to destroy.
-
-Do you really want to destroy all resources?
-  Terraform will destroy all your managed infrastructure, as shown above.
-  There is no undo. Only 'yes' will be accepted to confirm.
-
-  Enter a value: yes
-
-aws_instance.web: Destroying... [id=i-0090a8e6cfe9585c6]
-aws_instance.web: Still destroying... [id=i-0090a8e6cfe9585c6, 10s elapsed]
-aws_instance.web: Still destroying... [id=i-0090a8e6cfe9585c6, 20s elapsed]
-aws_instance.web: Still destroying... [id=i-0090a8e6cfe9585c6, 30s elapsed]
-aws_instance.web: Destruction complete after 31s
-
-Destroy complete! Resources: 1 destroyed.
 ```
 
 The `main.tf` file contains hard-coded values. Create `variables.tf` file and add the following content to define an input variable:
@@ -643,162 +696,6 @@ In `main.tf`:
 {% endcode %}
 
 ```bash
-$ terraform apply --auto-approve
-
-Terraform used the selected providers to generate the following execution plan. Resource actions are indicated with the following symbols:
-  + create
-
-Terraform will perform the following actions:
-
-  # aws_instance.web will be created
-  + resource "aws_instance" "web" {
-      + ami                                  = "ami-091f21ecba031b39a"
-      + arn                                  = (known after apply)
-      + associate_public_ip_address          = (known after apply)
-      + availability_zone                    = (known after apply)
-      + cpu_core_count                       = (known after apply)
-      + cpu_threads_per_core                 = (known after apply)
-      + disable_api_termination              = (known after apply)
-      + ebs_optimized                        = (known after apply)
-      + get_password_data                    = false
-      + host_id                              = (known after apply)
-      + id                                   = (known after apply)
-      + instance_initiated_shutdown_behavior = (known after apply)
-      + instance_state                       = (known after apply)
-      + instance_type                        = "t2.micro"
-      + ipv6_address_count                   = (known after apply)
-      + ipv6_addresses                       = (known after apply)
-      + key_name                             = (known after apply)
-      + monitoring                           = (known after apply)
-      + outpost_arn                          = (known after apply)
-      + password_data                        = (known after apply)
-      + placement_group                      = (known after apply)
-      + primary_network_interface_id         = (known after apply)
-      + private_dns                          = (known after apply)
-      + private_ip                           = (known after apply)
-      + public_dns                           = (known after apply)
-      + public_ip                            = (known after apply)
-      + secondary_private_ips                = (known after apply)
-      + security_groups                      = (known after apply)
-      + source_dest_check                    = true
-      + subnet_id                            = (known after apply)
-      + tags                                 = {
-          + "Name" = "TerraformWorkshops"
-        }
-      + tags_all                             = {
-          + "Name" = "TerraformWorkshops"
-        }
-      + tenancy                              = (known after apply)
-      + user_data                            = "5ab9f442a5001c89c3e281e3538db613cfff5950"
-      + user_data_base64                     = (known after apply)
-      + vpc_security_group_ids               = (known after apply)
-
-      + capacity_reservation_specification {
-          + capacity_reservation_preference = (known after apply)
-
-          + capacity_reservation_target {
-              + capacity_reservation_id = (known after apply)
-            }
-        }
-
-      + ebs_block_device {
-          + delete_on_termination = (known after apply)
-          + device_name           = (known after apply)
-          + encrypted             = (known after apply)
-          + iops                  = (known after apply)
-          + kms_key_id            = (known after apply)
-          + snapshot_id           = (known after apply)
-          + tags                  = (known after apply)
-          + throughput            = (known after apply)
-          + volume_id             = (known after apply)
-          + volume_size           = (known after apply)
-          + volume_type           = (known after apply)
-        }
-
-      + enclave_options {
-          + enabled = (known after apply)
-        }
-
-      + ephemeral_block_device {
-          + device_name  = (known after apply)
-          + no_device    = (known after apply)
-          + virtual_name = (known after apply)
-        }
-
-      + metadata_options {
-          + http_endpoint               = (known after apply)
-          + http_put_response_hop_limit = (known after apply)
-          + http_tokens                 = (known after apply)
-        }
-
-      + network_interface {
-          + delete_on_termination = (known after apply)
-          + device_index          = (known after apply)
-          + network_interface_id  = (known after apply)
-        }
-
-      + root_block_device {
-          + delete_on_termination = (known after apply)
-          + device_name           = (known after apply)
-          + encrypted             = (known after apply)
-          + iops                  = (known after apply)
-          + kms_key_id            = (known after apply)
-          + tags                  = (known after apply)
-          + throughput            = (known after apply)
-          + volume_id             = (known after apply)
-          + volume_size           = (known after apply)
-          + volume_type           = (known after apply)
-        }
-    }
-
-  # aws_security_group.web will be created
-  + resource "aws_security_group" "web" {
-      + arn                    = (known after apply)
-      + description            = "Managed by Terraform"
-      + egress                 = (known after apply)
-      + id                     = (known after apply)
-      + ingress                = [
-          + {
-              + cidr_blocks      = [
-                  + "0.0.0.0/0",
-                ]
-              + description      = ""
-              + from_port        = 5000
-              + ipv6_cidr_blocks = []
-              + prefix_list_ids  = []
-              + protocol         = "tcp"
-              + security_groups  = []
-              + self             = false
-              + to_port          = 5000
-            },
-        ]
-      + name                   = (known after apply)
-      + name_prefix            = (known after apply)
-      + owner_id               = (known after apply)
-      + revoke_rules_on_delete = false
-      + tags_all               = (known after apply)
-      + vpc_id                 = (known after apply)
-    }
-
-Plan: 2 to add, 0 to change, 0 to destroy.
-
-Changes to Outputs:
-  + instance_public_ip = (known after apply)
-aws_security_group.web: Creating...
-aws_security_group.web: Creation complete after 3s [id=sg-012b448a85576b023]
-aws_instance.web: Creating...
-aws_instance.web: Still creating... [10s elapsed]
-aws_instance.web: Still creating... [20s elapsed]
-aws_instance.web: Creation complete after 25s [id=i-0a7d753a4dd3bde46]
-
-Apply complete! Resources: 2 added, 0 changed, 0 destroyed.
-
-Outputs:
-
-instance_public_ip = "3.68.88.93"
-```
-
-```bash
 $ curl http://3.68.88.93:5000
 Hello, World
 ```
@@ -810,14 +707,6 @@ $ terraform output
 ```bash
 $ touch user_data.sh
 ```
-
-{% code title="terraform/ec2/user\_data.sh" %}
-```bash
-#!/bin/bash
-echo "Hello, World" > index.html
-nohup busybox httpd -f -p ${port} &
-```
-{% endcode %}
 
 [templatefile](https://www.terraform.io/docs/language/functions/templatefile.html) function
 

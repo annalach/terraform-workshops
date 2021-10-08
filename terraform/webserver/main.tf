@@ -14,6 +14,22 @@ provider "aws" {
   region  = "eu-central-1"
 }
 
+data "aws_ami" "ubuntu" {
+  most_recent = true
+
+  filter {
+    name   = "name"
+    values = ["ubuntu/images/hvm-ssd/ubuntu-focal-20.04-amd64-server-*"]
+  }
+
+  filter {
+    name   = "virtualization-type"
+    values = ["hvm"]
+  }
+
+  owners = ["099720109477"] # Canonical
+}
+
 resource "aws_security_group" "webserver" {
   description = "Security group for webserver"
 
@@ -48,16 +64,12 @@ resource "aws_key_pair" "my_ec2_key_pair" {
 }
 
 resource "aws_instance" "webserver" {
-  ami                    = "ami-091f21ecba031b39a"
+  ami                    = data.aws_ami.ubuntu.id
   instance_type          = "t2.micro"
   key_name               = aws_key_pair.my_ec2_key_pair.key_name
   vpc_security_group_ids = [aws_security_group.webserver.id]
 
-  user_data = <<-EOF
-              #!/bin/bash
-              echo "Hello, World" > index.html
-              nohup busybox httpd -f -p ${var.server_port} &
-              EOF
+  user_data = templatefile("./user_data.sh", { port = var.server_port })
 
   tags = {
     Name = "TerraformWorkshops"

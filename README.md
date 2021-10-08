@@ -22,6 +22,18 @@ We will destroy all resources at the end of the workshops.
 
 ### Infrastructure we will build
 
+consists of:
+
+* Virtual Private Cloud with:
+  * 4 subnets \(2 public and 2 private\)
+  * Internet Gateway
+  * 2 Route Tables
+  * VPC Endpoint
+* Application Load Balancer
+* Auto Scaling Group
+* Relational Database Service
+* Security Groups
+
 ![](.gitbook/assets/screen-shot-2021-10-08-at-16.17.44.png)
 
 ## "Infrastructure as Code" tools we will use

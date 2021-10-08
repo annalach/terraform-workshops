@@ -1,6 +1,6 @@
 # 2. Elastic Compute Cloud
 
-During these workshops, you will use the default `local` backend. A backend is a place where:
+During these workshops, we will use the default `local` backend. A backend is a place where:
 
 * the state of your infrastructure is stored,
 * operations are performed.
@@ -15,7 +15,6 @@ Create a directory on your computer for these workshops. I will refer to this di
 *.tfstate
 *.tfstate.lock.info
 *.tfstate.backup
-
 ```
 {% endcode %}
 
@@ -49,15 +48,12 @@ resource "aws_instance" "webserver" {
     Name = "TerraformWorkshops"
   }
 }
-
 ```
 {% endcode %}
 
 The `terraform {}` block contains settings, including AWS provider installed from [Terraform Registry](https://registry.terraform.io/). Providers are plugins that implement resource types. The examples use AWS Provider to create resources on AWS Cloud in `eu-central-1` region \(Europe, Frankfurt\) using AWS CLI `default` profile.
 
-[aws\_instance](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/instance) resource creates [Elastic Compute Cloud \(EC2\)](https://aws.amazon.com/ec2) instance \(virtual server\).
-
-In the `ec2` directory, run [`terraform init`](https://www.terraform.io/docs/cli/commands/init.html) command in your terminal to initialize a working directory containing Terraform configuration files.
+In the `webserver` directory, run [`terraform init`](https://www.terraform.io/docs/cli/commands/init.html) command in your terminal to initialize a working directory containing Terraform configuration files.
 
 ```bash
 $ terraform init
@@ -393,7 +389,7 @@ Let's create SSH key pair and use it to connect to the EC2 instance.
 $ ssh-keygen -t rsa -b 2048 -C "ubuntu" -m PEM -f ~/myEC2KeyPair
 ```
 
-Make the following update:
+Make the following update to add key pair and security group and add use them with the EC2 instance:
 
 {% code title="terraform/webserver/main.tf" %}
 ```bash
@@ -518,81 +514,68 @@ Connection to 3.120.139.14 closed.
 
 Let's make life easier and create:
 
+* `variable` to define server port and use it in security group's ingress rule and user data script
 *  `user_data` script that will fire up webserver when an EC2 instance is up
 *  `output` that will give us a public IP address of an instance
-* `variable` to define server port and use it in security group's ingress rule and user data script
 
-We can polish the config by using:
+{% code title="terraform/webserver/variables.tf" %}
+```bash
+variable "server_port" {
+  description = "The port the server will use for HTTP requests"
+  type        = number
+  default     = 5000
+}
+```
+{% endcode %}
+
+{% code title="terraform/webserver/main.tf" %}
+```bash
+@@ -28,8 +28,8 @@ resource "aws_security_group" "webserver" {
+   ingress {
+     description = "Allow inbound on port 5000"
+     protocol    = "tcp"
+-    from_port   = 5000
+-    to_port     = 5000
++    from_port   = var.server_port
++    to_port     = var.server_port
+     cidr_blocks = ["0.0.0.0/0"]
+   }
+ 
+@@ -53,6 +53,12 @@ resource "aws_instance" "webserver" {
+   key_name               = aws_key_pair.my_ec2_key_pair.key_name
+   vpc_security_group_ids = [aws_security_group.webserver.id]
+ 
++  user_data = <<-EOF
++              #!/bin/bash
++              echo "Hello, World" > index.html
++              nohup busybox httpd -f -p ${var.server_port} &
++              EOF
++
+   tags = {
+     Name = "TerraformWorkshops"
+   }
+```
+{% endcode %}
+
+{% code title="terraform/webserver/outputs.tf" %}
+```bash
+output "instance_public_ip" {
+  description = "Publi IP address of the EC2 instace"
+  value       = aws_instance.webserver.public_ip
+}
+```
+{% endcode %}
+
+Apply changes.
+
+Next, we can polish the config by using:
 
 * `data source` to get the latest Ubuntu Amazon Machine Image ID value
 * `templatefile` function to move bash script to a separate file
 
-{% code title="terraform/webserver/user\_data.sh" %}
+{% code title="terraform/webserver/main.tf" %}
 ```bash
-#!/bin/bash
-echo "Hello, World" > index.html
-nohup busybox httpd -f -p ${port} &
-```
-{% endcode %}
-
-Execute [`terraform destroy`](https://www.terraform.io/docs/cli/commands/destroy.html) command in order to delete your resources.
-
-```bash
-$ terraform destroy
-```
-
-The `main.tf` file contains hard-coded values. Create `variables.tf` file and add the following content to define an input variable:
-
-{% code title="terraform/ec2/variables.tf" %}
-```bash
-variable "instance_name" {
-  description = "Value of the Name tag for the EC instance"
-  type        = string
-  default     = "TerraformWorkshops"
-}
-```
-{% endcode %}
-
-Now, update `main.tf` file to use the input variable:
-
-{% code title="terraform/ec2/main.tf" %}
-```bash
-@@ -19,6 +19,6 @@ resource "aws_instance" "web" {
-   instance_type = "t2.micro"
- 
-   tags = {
--    Name = "TerraformWorkshops"
-+    Name = var.instance_name
-   }
- }
-```
-{% endcode %}
-
-Next, I want you to get rid of the hard-coded `ami` value. To do this you will use a [data source](https://www.terraform.io/docs/language/data-sources/index.html) functionality to get the latest Ubuntu Amazon Machine Image. Here is an example of such a data source:
-
-```bash
-data "aws_ami" "ubuntu" {
-  most_recent = true
-
-  filter {
-    name   = "name"
-    values = ["ubuntu/images/hvm-ssd/ubuntu-focal-20.04-amd64-server-*"]
-  }
-
-  filter {
-    name   = "virtualization-type"
-    values = ["hvm"]
-  }
-
-  owners = ["099720109477"] # Canonical
-}
-```
-
-Use this in your `main.tf` file:
-
-{% code title="terraform/ec2/main.tf" %}
-```bash
-@@ -14,8 +14,24 @@ provider "aws" {
+@@ -14,6 +14,22 @@ provider "aws" {
    region  = "eu-central-1"
  }
  
@@ -612,120 +595,54 @@ Use this in your `main.tf` file:
 +  owners = ["099720109477"] # Canonical
 +}
 +
- resource "aws_instance" "web" {
--  ami           = "ami-091f21ecba031b39a"
-+  ami           = data.aws_ami.ubuntu.id
-   instance_type = "t2.micro"
+ resource "aws_security_group" "webserver" {
+   description = "Security group for webserver"
  
-   tags = {
-```
-{% endcode %}
-
-It would be great to know the public IP address of the server without visiting AWS Console. Add `outputs.tf` file and define output in it:
-
-{% code title="terraform/ec2/outputs.tf" %}
-```bash
-output "instance_public_ip" {
-  description = "Publi IP address of the EC2 instace"
-  value       = aws_instance.web.public_ip
-}
-```
-{% endcode %}
-
-Let's make your EC2 just a little useful and make a web server from it 😂. Please:
-
-Add `server_port` variable to `variables.tf` file:
-
-{% code title="terraform/ec2/variables.tf" %}
-```bash
-@@ -3,3 +3,9 @@ variable "instance_name" {
-   type        = string
-   default     = "TerraformWorkshops"
- }
-+
-+variable "server_port" {
-+  description = "The port the server will use for HTTP requests"
-+  type        = number
-+  default     = 5000
-+}
-```
-{% endcode %}
-
-In `main.tf`:
-
-* add `aws_security_group` resource to configure [Security Group](https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/ec2-security-groups.html). It acts as a virtual firewall for EC2 instances to control incoming and outgoing traffic. Your security group should have a rule that allows incoming traffic at the port you specified as `server_port` variable.
-* add vpc\_security\_group\_ids to assign the security group to your EC2 instance.
-* add `user_data` script that fires up a web server using busybox tool \(installed by default on Ubuntu\).
-
-  `<<-EOT` is [Indented Heredocs](https://www.terraform.io/docs/language/expressions/strings.html#indented-heredocs) which allows you to use multi-line indented strings. In this string is possible to pass variable using [interpolation](https://www.terraform.io/docs/language/expressions/strings.html#interpolation) \(`${...}`\). nohup & 
-
-  
-
-{% code title="terraform/ec2/main.tf" %}
-```bash
-@@ -30,9 +30,28 @@ data "aws_ami" "ubuntu" {
-   owners = ["099720109477"] # Canonical
+@@ -48,16 +64,12 @@ resource "aws_key_pair" "my_ec2_key_pair" {
  }
  
-+resource "aws_security_group" "web" {
-+
-+  ingress {
-+    from_port   = var.server_port
-+    to_port     = var.server_port
-+    protocol    = "tcp"
-+    cidr_blocks = ["0.0.0.0/0"]
-+  }
-+
-+}
-+
- resource "aws_instance" "web" {
-   ami                    = data.aws_ami.ubuntu.id
+ resource "aws_instance" "webserver" {
+-  ami                    = "ami-091f21ecba031b39a"
++  ami                    = data.aws_ami.ubuntu.id
    instance_type          = "t2.micro"
-+  vpc_security_group_ids = [aws_security_group.web.id]
-+
-+  user_data = <<-EOF
-+              #!/bin/bash
-+              echo "Hello, World" > index.html
-+              nohup busybox httpd -f -p ${var.server_port} &
-+              EOF
-+
- 
-   tags = {
-     Name = var.instance_name
-```
-{% endcode %}
-
-```bash
-$ curl http://3.68.88.93:5000
-Hello, World
-```
-
-```bash
-$ terraform output
-```
-
-```bash
-$ touch user_data.sh
-```
-
-[templatefile](https://www.terraform.io/docs/language/functions/templatefile.html) function
-
-{% code title="terraform/ec2/main.tf" %}
-```bash
-@@ -46,12 +46,7 @@ resource "aws_instance" "web" {
-   instance_type          = "t2.micro"
-   vpc_security_group_ids = [aws_security_group.web.id]
+   key_name               = aws_key_pair.my_ec2_key_pair.key_name
+   vpc_security_group_ids = [aws_security_group.webserver.id]
  
 -  user_data = <<-EOF
 -              #!/bin/bash
 -              echo "Hello, World" > index.html
 -              nohup busybox httpd -f -p ${var.server_port} &
 -              EOF
--
 +  user_data = templatefile("./user_data.sh", { port = var.server_port })
  
    tags = {
-     Name = var.instance_name
+     Name = "TerraformWorkshops"
 ```
 {% endcode %}
+
+{% code title="terraform/webserver/user\_data.sh" %}
+```bash
+#!/bin/bash
+echo "Hello, World" > index.html
+nohup busybox httpd -f -p ${port} &
+```
+{% endcode %}
+
+Apply changes and verify if everything works. Run `terraform output` command to get the EC2 instance public IP address:
+
+```bash
+$ terraform output
+```
+
+To get a list of created resources run `terraform state list` command:
+
+```bash
+$ terraform state list
+```
+
+Finally, execute [`terraform destroy`](https://www.terraform.io/docs/cli/commands/destroy.html) command in order to delete your resources.
+
+```bash
+$ terraform destroy
+```
 

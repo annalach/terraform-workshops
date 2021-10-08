@@ -1,11 +1,8 @@
 # 2. Elastic Compute Cloud
 
-During these workshops, we will use the default `local` backend. A backend is a place where:
+During these workshops, we will use the default `local` backend. A backend is a place where the state of your infrastructure is stored.
 
-* the state of your infrastructure is stored,
-* operations are performed.
-
- The state is kept in JSON format in a file with `tfstate` extension. It stores all information about your infrastructure, including **sensitive data** like database credentials. Due to this fact, the state shouldn't be kept in a version control system. 
+The state is kept in JSON format in a file with `tfstate` extension. It stores all information about your infrastructure, including **sensitive data** like database credentials. Due to this fact, the state shouldn't be kept in a version control system. 
 
 Create a directory on your computer for these workshops. I will refer to this directory as a **root directory**. Inside it, create `.gitignore` file with the following content:
 
@@ -51,28 +48,33 @@ resource "aws_instance" "webserver" {
 ```
 {% endcode %}
 
-The `terraform {}` block contains settings, including AWS provider installed from [Terraform Registry](https://registry.terraform.io/). Providers are plugins that implement resource types. The examples use AWS Provider to create resources on AWS Cloud in `eu-central-1` region \(Europe, Frankfurt\) using AWS CLI `default` profile.
+The `terraform {}` block contains settings, including AWS provider installed from [Terraform Registry](https://registry.terraform.io/). Providers are plugins that implement resource types. We will use AWS provider to create resources on AWS Cloud in `eu-central-1` region \(Europe, Frankfurt\).
 
-In the `webserver` directory, run [`terraform init`](https://www.terraform.io/docs/cli/commands/init.html) command in your terminal to initialize a working directory containing Terraform configuration files.
+In the `webserver` directory, run `terraform fmt` command to format the code.
+
+```bash
+$ terraform fmt
+```
+
+ Next, run `terraform init` command to install providers.
 
 ```bash
 $ terraform init
 ```
 
-Now you can use [`terraform fmt`](https://www.terraform.io/docs/cli/commands/fmt.html) command to format Terraform configurations files and [`terraform validate`](https://www.terraform.io/docs/cli/commands/validate.html) to validate them.
+Now you can use `terraform validate` command to validate the configuration
 
 ```bash
-$ terraform fmt
 $ terraform validate
 ```
 
-Once validation succeeded you can use [`terraform plan`](https://www.terraform.io/docs/cli/commands/plan.html) command to see what Terraform needs to do to achieve described infrastructure.
+Once validation succeeded you can use `terraform plan` command to see what Terraform needs to do to achieve described infrastructure.
 
 ```bash
 $ terraform plan
 ```
 
-Run [`terraform apply`](https://www.terraform.io/docs/cli/commands/apply.html) command to deploy your resources. Verify displayed execution plan and type `yes` to confirm.
+Run `terraform apply` command to deploy your resources. Verify displayed execution plan and type `yes` to confirm.
 
 ```bash
 $ terraform apply
@@ -389,7 +391,7 @@ Let's create SSH key pair and use it to connect to the EC2 instance.
 $ ssh-keygen -t rsa -b 2048 -C "ubuntu" -m PEM -f ~/myEC2KeyPair
 ```
 
-Make the following update to add key pair and security group and add use them with the EC2 instance:
+Make the following update to add key pair and security group with ingress and egress rules and use them with the EC2 instance:
 
 {% code title="terraform/webserver/main.tf" %}
 ```bash
@@ -640,7 +642,7 @@ To get a list of created resources run `terraform state list` command:
 $ terraform state list
 ```
 
-Finally, execute [`terraform destroy`](https://www.terraform.io/docs/cli/commands/destroy.html) command in order to delete your resources.
+Finally, execute `terraform destroy` command in order to delete your resources.
 
 ```bash
 $ terraform destroy

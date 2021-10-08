@@ -20,7 +20,7 @@ Charges that you may incur because of these workshops should not exceed **1$**. 
 
 We will destroy all resources at the end of the workshops.
 
-### Infrastructure we will build
+### The infrastructure we will build
 
 consists of:
 
@@ -34,6 +34,8 @@ consists of:
 * Relational Database Service
 * Security Groups
 * IAM Role
+
+We will use AWS Secrets Manager service to store credentials for the database.
 
 ![](.gitbook/assets/screen-shot-2021-10-08-at-16.17.44.png)
 

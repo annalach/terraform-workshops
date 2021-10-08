@@ -33,6 +33,7 @@ consists of:
 * Auto Scaling Group
 * Relational Database Service
 * Security Groups
+* IAM Role
 
 ![](.gitbook/assets/screen-shot-2021-10-08-at-16.17.44.png)
 

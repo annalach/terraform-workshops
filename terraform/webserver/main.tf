@@ -28,8 +28,8 @@ resource "aws_security_group" "webserver" {
   ingress {
     description = "Allow inbound on port 5000"
     protocol    = "tcp"
-    from_port   = 5000
-    to_port     = 5000
+    from_port   = var.server_port
+    to_port     = var.server_port
     cidr_blocks = ["0.0.0.0/0"]
   }
 
@@ -52,6 +52,12 @@ resource "aws_instance" "webserver" {
   instance_type          = "t2.micro"
   key_name               = aws_key_pair.my_ec2_key_pair.key_name
   vpc_security_group_ids = [aws_security_group.webserver.id]
+
+  user_data = <<-EOF
+              #!/bin/bash
+              echo "Hello, World" > index.html
+              nohup busybox httpd -f -p ${var.server_port} &
+              EOF
 
   tags = {
     Name = "TerraformWorkshops"

@@ -1,6 +1,6 @@
 # Table of contents
 
-* [Overview](README.md)
+* [Introduction](README.md)
 * [1. Setup](setup.md)
 * [2. Elastic Compute Cloud](ec2.md)
 * [3. Virtual Private Cloud](vpc.md)

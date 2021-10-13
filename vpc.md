@@ -1,10 +1,105 @@
 # 3. Virtual Private Cloud
 
-## VPC configuration
+Let's create a network for our infrastructure. In `terraform` directory , create `network` directory with `main.tf` file.
 
+{% code title="terraform/network/main.tf" %}
 ```bash
-$ terraform init
+terraform {
+  required_providers {
+    aws = {
+      source  = "hashicorp/aws"
+      version = "~> 3.62.0"
+    }
+  }
+
+  required_version = ">= 1.0.8"
+}
+
+provider "aws" {
+  region = "eu-central-1"
+}
+
+resource "aws_vpc" "vpc" {
+  cidr_block = "10.0.0.0/16"
+
+  tags = {
+    Name = "TerraformWorkshopsVPC"
+  }
+}
 ```
+{% endcode %}
+
+Run `terraform init` and `terraform apply` commands to create VPC, then go to[ VPC Dashboard](https://eu-central-1.console.aws.amazon.com/vpc) on AWS Console to check what resources were created.
+
+{% hint style="info" %}
+Along with a new VPC the following resources are created:
+
+* Main Route Table
+* Network Access Control List
+* Security Group
+{% endhint %}
+
+Create 4 subnets, 2 public and 2 private, 1 public and 1 private in 1 availability zone.
+
+{% code title="terraform/network/main.tf" %}
+```bash
+@@ -20,3 +20,48 @@ resource "aws_vpc" "main" {
+     Name = "TerraformWorkshopsVPC"
+   }
+ }
++
++data "aws_availability_zones" "available" {
++  state = "available"
++}
++
++resource "aws_subnet" "public_subnet_a" {
++  vpc_id            = aws_vpc.main.id
++  availability_zone = data.aws_availability_zones.available.names[0]
++  cidr_block        = "10.0.1.0/24"
++
++  tags = {
++    Name = "PublicSubnetA"
++  }
++}
++
++resource "aws_subnet" "public_subnet_b" {
++  vpc_id            = aws_vpc.main.id
++  availability_zone = data.aws_availability_zones.available.names[1]
++  cidr_block        = "10.0.2.0/24"
++
++  tags = {
++    Name = "PublicSubnetB"
++  }
++}
++
++resource "aws_subnet" "private_subnet_a" {
++  vpc_id            = aws_vpc.main.id
++  availability_zone = data.aws_availability_zones.available.names[0]
++  cidr_block        = "10.0.3.0/24"
++
++  tags = {
++    Name = "PrivateSubnetA"
++  }
++
++}
++
++resource "aws_subnet" "private_subnet_b" {
++  vpc_id            = aws_vpc.main.id
++  availability_zone = data.aws_availability_zones.available.names[1]
++  cidr_block        = "10.0.4.0/24"
++
++  tags = {
++    Name = "PrivateSubnetB"
++  }
++}
+```
+{% endcode %}
+
+Apply changes and check subnet associations for the main route table.
+
+{% hint style="danger" %}
+Subnets that are not explicitly associated with any route table are associated with the main route table!
+{% endhint %}
 
 {% code title="terraform/vpc/mainf.tf" %}
 ```bash
@@ -85,11 +180,11 @@ resource "aws_route_table_association" "a" {
 ```
 {% endcode %}
 
-```text
+```
 $ terraform apply
 ```
 
-```text
+```
 $ touch outputs.tf
 ```
 
@@ -121,7 +216,7 @@ output "private_subnet_id" {
 $ ssh-keygen -t rsa -b 2048 -C "ubuntu" -m PEM -f ~/myEC2KeyPair
 ```
 
-## The terraform\_remote\_state Data Source
+## The terraform_remote_state Data Source
 
 {% code title="terraform/ec2-test-instances/main.tf" %}
 ```bash
@@ -300,4 +395,3 @@ Connection to 35.156.147.217 closed.
 ```
 
 The example code from this section is available [here](https://github.com/annalach/terraform-workshops/tree/vpc/terraform-workshops).
-

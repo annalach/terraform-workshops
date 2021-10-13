@@ -2,20 +2,9 @@
 
 During these workshops, we will use the default `local` backend. A backend is a place where the state of your infrastructure is stored.
 
-The state is kept in JSON format in a file with `tfstate` extension. It stores all information about your infrastructure, including **sensitive data** like database credentials. Due to this fact, the state shouldn't be kept in a version control system. 
+The state is kept in JSON format in a file with `tfstate` extension. It stores all information about your infrastructure, including **sensitive data** like database credentials. Due to this fact, the state shouldn't be kept in a version control system. An example `.gitignore` file for Terraform is available [here](https://github.com/github/gitignore/blob/master/Terraform.gitignore).
 
-Create a directory on your computer for these workshops. I will refer to this directory as a **root directory**. Inside it, create `.gitignore` file with the following content:
-
-{% code title=".gitignore" %}
-```bash
-.terraform
-*.tfstate
-*.tfstate.lock.info
-*.tfstate.backup
-```
-{% endcode %}
-
-Besides the state files, I want you to ignore `.terraform` directories Terraform will create. You can think about it like `node_modules` in a JavaScript project. It stores the dependencies required by your project. Like NPM creates a `package-lock.json` file to represent the dependencies you declared, Terraform will create `.terraform.lock.hcl` file you should keep in your VCS.
+Create a directory on your computer for these workshops. I will refer to this directory as a **root directory**. 
 
 In your root directory create `terraform` directory. Inside it, create `webserver` directory with `main.tf` file and add the following code to it:
 
@@ -33,7 +22,6 @@ terraform {
 }
 
 provider "aws" {
-  profile = "default"
   region  = "eu-central-1"
 }
 
@@ -48,7 +36,7 @@ resource "aws_instance" "webserver" {
 ```
 {% endcode %}
 
-The `terraform {}` block contains settings, including AWS provider installed from [Terraform Registry](https://registry.terraform.io/). Providers are plugins that implement resource types. We will use AWS provider to create resources on AWS Cloud in `eu-central-1` region \(Europe, Frankfurt\).
+The `terraform {}` block contains settings, including AWS provider installed from [Terraform Registry](https://registry.terraform.io). Providers are plugins that implement resource types. We will use AWS provider to create resources on AWS Cloud in `eu-central-1` region (Europe, Frankfurt).
 
 In the `webserver` directory, run `terraform fmt` command to format the code.
 
@@ -201,7 +189,7 @@ aws_instance.webserver: Creation complete after 25s [id=i-08839e4a788d49081]
 Apply complete! Resources: 1 added, 0 changed, 0 destroyed.
 ```
 
-Depending on the type of change you want to do, Terraform will perform an update in-place \(e.g tag change\) or destroy and then create a replacement \(e.g AMI change\).
+Depending on the type of change you want to do, Terraform will perform an update in-place (e.g tag change) or destroy and then create a replacement (e.g AMI change).
 
 {% code title="terraform/webserver/main.tf" %}
 ```bash
@@ -382,7 +370,7 @@ Plan: 1 to add, 0 to change, 1 to destroy.
 Go to[ EC2 Dashboard on AWS Console](https://console.aws.amazon.com/ec2/v2/home?region=eu-central-1) to see created EC2 instance. 
 
 {% hint style="info" %}
-The EC2 instance is created in the default VPC and assigned to the default Security Group \(you can think about it as a virtual firewall\) that controls incoming and outgoing traffic. By default Security Group has rules that allow communication between resources in this Security Group.
+The EC2 instance is created in the default VPC and assigned to the default Security Group (you can think about it as a virtual firewall) that controls incoming and outgoing traffic. By default Security Group has rules that allow communication between resources in this Security Group.
 {% endhint %}
 
 Let's create SSH key pair and use it to connect to the EC2 instance.
@@ -447,7 +435,7 @@ Make the following update to add key pair and security group with ingress and eg
 
 Run `terraform apply` command to update your resources.
 
-Once changes are done, go to AWS Console and find the public IP address of your instance and connect via SSH \(make sure to use your EC2 instance IP address instead of `3.120.139.14`\):
+Once changes are done, go to AWS Console and find the public IP address of your instance and connect via SSH (make sure to use your EC2 instance IP address instead of `3.120.139.14`):
 
 ```bash
 $ ssh -i ~/myEC2KeyPair ubuntu@3.120.139.14
@@ -622,7 +610,7 @@ Next, we can polish the config by using:
 ```
 {% endcode %}
 
-{% code title="terraform/webserver/user\_data.sh" %}
+{% code title="terraform/webserver/user_data.sh" %}
 ```bash
 #!/bin/bash
 echo "Hello, World" > index.html
@@ -647,4 +635,3 @@ Finally, execute `terraform destroy` command in order to delete your resources.
 ```bash
 $ terraform destroy
 ```
-

@@ -20,3 +20,48 @@ resource "aws_vpc" "main" {
     Name = "TerraformWorkshopsVPC"
   }
 }
+
+data "aws_availability_zones" "available" {
+  state = "available"
+}
+
+resource "aws_subnet" "public_subnet_a" {
+  vpc_id            = aws_vpc.main.id
+  availability_zone = data.aws_availability_zones.available.names[0]
+  cidr_block        = "10.0.1.0/24"
+
+  tags = {
+    Name = "PublicSubnetA"
+  }
+}
+
+resource "aws_subnet" "public_subnet_b" {
+  vpc_id            = aws_vpc.main.id
+  availability_zone = data.aws_availability_zones.available.names[1]
+  cidr_block        = "10.0.2.0/24"
+
+  tags = {
+    Name = "PublicSubnetB"
+  }
+}
+
+resource "aws_subnet" "private_subnet_a" {
+  vpc_id            = aws_vpc.main.id
+  availability_zone = data.aws_availability_zones.available.names[0]
+  cidr_block        = "10.0.3.0/24"
+
+  tags = {
+    Name = "PrivateSubnetA"
+  }
+
+}
+
+resource "aws_subnet" "private_subnet_b" {
+  vpc_id            = aws_vpc.main.id
+  availability_zone = data.aws_availability_zones.available.names[1]
+  cidr_block        = "10.0.4.0/24"
+
+  tags = {
+    Name = "PrivateSubnetB"
+  }
+}

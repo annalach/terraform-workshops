@@ -29,7 +29,7 @@ resource "aws_vpc" "vpc" {
 ```
 {% endcode %}
 
-Run `terraform init` and `terraform apply` commands to create VPC, then go to[ VPC Dashboard](https://eu-central-1.console.aws.amazon.com/vpc) on AWS Console to check what resources were created.
+Run `terraform init` and `terraform apply` commands to create a VPC, then go to[ VPC Dashboard](https://eu-central-1.console.aws.amazon.com/vpc) on AWS Console to check what resources were created.
 
 {% hint style="info" %}
 Along with a new VPC the following resources are created:
@@ -39,7 +39,7 @@ Along with a new VPC the following resources are created:
 * Security Group
 {% endhint %}
 
-Create 4 subnets, 2 public and 2 private, 1 public and 1 private in 1 availability zone.
+Create 4 subnets, 2 public and 2 private, 1 public and 1 private per 1 availability zone.
 
 {% code title="terraform/network/main.tf" %}
 ```bash
@@ -80,7 +80,6 @@ Create 4 subnets, 2 public and 2 private, 1 public and 1 private in 1 availabili
 +  tags = {
 +    Name = "PrivateSubnetA"
 +  }
-+
 +}
 +
 +resource "aws_subnet" "private_subnet_b" {
@@ -95,11 +94,51 @@ Create 4 subnets, 2 public and 2 private, 1 public and 1 private in 1 availabili
 ```
 {% endcode %}
 
-Apply changes and check subnet associations for the main route table.
+Apply changes and check subnet associations for the Main Route Table.
 
 {% hint style="danger" %}
-Subnets that are not explicitly associated with any route table are associated with the main route table!
+Subnets that are not explicitly associated with any route table are associated with the main route table. Never associate Internet Gateway with the Main Route Table to not expose your private resources by accident!
 {% endhint %}
+
+Let's explicitly make two subnets public. To do that we need to create a new Route Table and an Internet Gateway associated with it, and then associate subnets with the table.
+
+{% code title="terraform/network/main.tf" %}
+```bash
+@@ -65,3 +65,30 @@ resource "aws_subnet" "private_subnet_b" {
+     Name = "PrivateSubnetB"
+   }
+ }
++
++resource "aws_internet_gateway" "igw" {
++  vpc_id = aws_vpc.main.id
++
++  tags = {
++    "Name" = "TerraformWorkshopsInternetGateway"
++  }
++}
++
++resource "aws_route_table" "public_route" {
++  vpc_id = aws_vpc.main.id
++
++  route {
++    cidr_block = "0.0.0.0/0"
++    gateway_id = aws_internet_gateway.igw.id
++  }
++}
++
++resource "aws_route_table_association" "public_a_association" {
++  subnet_id      = aws_subnet.public_subnet_a.id
++  route_table_id = aws_route_table.public_route.id
++}
++
++resource "aws_route_table_association" "public_b_association" {
++  subnet_id      = aws_subnet.public_subnet_b.id
++  route_table_id = aws_route_table.public_route.id
++}
+```
+{% endcode %}
+
+For now, the VPC configuration is ready. We need to test if it works correctly. For this purpose in `terraform` directory create `webserver-cluster` directory with `main.tf` file. At this point we will create a configuration required to test the VPC, later it will be transformed into a webserver cluster configuration.
 
 {% code title="terraform/vpc/mainf.tf" %}
 ```bash

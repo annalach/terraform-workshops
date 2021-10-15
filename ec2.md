@@ -367,7 +367,7 @@ Terraform will perform the following actions:
 Plan: 1 to add, 0 to change, 1 to destroy.
 ```
 
-Go to[ EC2 Dashboard on AWS Console](https://console.aws.amazon.com/ec2/v2/home?region=eu-central-1) to see created EC2 instance. 
+Go to EC2 Dashboard on AWS Console to see created EC2 instance. 
 
 {% hint style="info" %}
 The EC2 instance is created in the default VPC and assigned to the default Security Group (you can think about it as a virtual firewall) that controls incoming and outgoing traffic. By default Security Group has rules that allow communication between resources in this Security Group.

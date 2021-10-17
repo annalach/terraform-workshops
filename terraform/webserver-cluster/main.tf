@@ -21,8 +21,17 @@ data "terraform_remote_state" "network" {
   }
 }
 
+data "terraform_remote_state" "iam" {
+  backend = "local"
+
+  config = {
+    "path" = "../iam/terraform.tfstate"
+  }
+}
+
 locals {
-  vpc_id = data.terraform_remote_state.network.outputs.vpc_id
+  vpc_id               = data.terraform_remote_state.network.outputs.vpc_id
+  iam_instance_profile = data.terraform_remote_state.iam.outputs.ec2_instance_profile_name
 }
 
 resource "aws_security_group" "public" {
@@ -77,6 +86,7 @@ resource "aws_instance" "public" {
   subnet_id                   = data.terraform_remote_state.network.outputs.public_subnet_ids[0]
   vpc_security_group_ids      = [aws_security_group.public.id]
   associate_public_ip_address = true
+  iam_instance_profile        = local.iam_instance_profile
 }
 
 resource "aws_instance" "private" {
@@ -85,4 +95,5 @@ resource "aws_instance" "private" {
   key_name               = aws_key_pair.my_ec2_key_pair.key_name
   subnet_id              = data.terraform_remote_state.network.outputs.private_subnet_ids[0]
   vpc_security_group_ids = [aws_security_group.private.id]
+  iam_instance_profile   = local.iam_instance_profile
 }

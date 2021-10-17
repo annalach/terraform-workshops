@@ -2,16 +2,15 @@ terraform {
   required_providers {
     aws = {
       source  = "hashicorp/aws"
-      version = "~> 3.27"
+      version = "~> 3.62.0"
     }
   }
 
-  required_version = ">= 0.14.9"
+  required_version = ">= 1.0.8"
 }
 
 provider "aws" {
-  profile = "default"
-  region  = "eu-central-1"
+  region = "eu-central-1"
 }
 
 data "terraform_remote_state" "secrets" {
@@ -49,14 +48,14 @@ resource "aws_iam_role_policy" "ec2_policy" {
   name = "terraform-workshops-ec2-policy"
   role = aws_iam_role.ec2_role.id
 
-  policy = <<EOT
-{
-    "Version" : "2012-10-17",
-    "Statement" : {
-      "Effect" : "Allow",
-      "Action" : "secretsmanager:GetSecretValue",
-      "Resource" : "${data.terraform_remote_state.secrets.outputs.db_secert_arn}"
-    }
-}
-EOT
+  policy = <<-EOT
+           {
+               "Version" : "2012-10-17",
+               "Statement" : {
+                 "Effect" : "Allow",
+                 "Action" : "secretsmanager:GetSecretValue",
+                 "Resource" : "${data.terraform_remote_state.secrets.outputs.db_secert_arn}"
+               }
+           }
+           EOT
 }

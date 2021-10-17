@@ -1,7 +1,4 @@
-output "public_ip_address" {
-  value = aws_instance.public.public_ip
-}
-
-output "private_ip_address" {
-  value = aws_instance.private.private_ip
+output "alb_dns_name" {
+  value       = aws_lb.alb.dns_name
+  description = "The domain name of the load balander"
 }

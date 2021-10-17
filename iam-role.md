@@ -118,12 +118,12 @@ Update `webserver-cluster` config:
 ```
 {% endcode %}
 
-Connect via SSH with the EC2 instance, install the AWS CLI and try to read the secret's value:
+Connect via SSH with the EC2 instance, install the AWS CLI (and postgresql-client, we will use it later), and try to read the secret's value:
 
 ```bash
 ubuntu@ip-10-0-1-81:~$ sudo apt-get update
 
-ubuntu@ip-10-0-1-81:~$ sudo apt-get install awscli
+ubuntu@ip-10-0-1-81:~$ sudo apt-get install awscli postgresql-client
 
 ubuntu@ip-10-0-1-81:~$ aws --version
 

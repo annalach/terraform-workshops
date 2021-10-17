@@ -2,16 +2,15 @@ terraform {
   required_providers {
     aws = {
       source  = "hashicorp/aws"
-      version = "~> 3.27"
+      version = "~> 3.62.0"
     }
   }
 
-  required_version = ">= 0.14.9"
+  required_version = ">= 1.0.8"
 }
 
 provider "aws" {
-  profile = "default"
-  region  = "eu-central-1"
+  region = "eu-central-1"
 }
 
 resource "random_password" "password" {
@@ -31,8 +30,8 @@ resource "aws_secretsmanager_secret" "db_secret" {
 resource "aws_secretsmanager_secret_version" "db_secret_version" {
   secret_id = aws_secretsmanager_secret.db_secret.id
   secret_string = jsonencode({
-    name     = "workshops"
-    username = "workshops"
+    name     = "workshopsdb"
+    username = "workshopsuser"
     password = random_password.password.result
   })
 }

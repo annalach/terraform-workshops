@@ -2,23 +2,22 @@ terraform {
   required_providers {
     aws = {
       source  = "hashicorp/aws"
-      version = "~> 3.27"
+      version = "~> 3.62.0"
     }
   }
 
-  required_version = ">= 0.14.9"
+  required_version = ">= 1.0.8"
 }
 
 provider "aws" {
-  profile = "default"
-  region  = "eu-central-1"
+  region = "eu-central-1"
 }
 
-data "terraform_remote_state" "vpc" {
+data "terraform_remote_state" "network" {
   backend = "local"
 
   config = {
-    "path" = "../vpc/terraform.tfstate"
+    "path" = "../network/terraform.tfstate"
   }
 }
 
@@ -56,18 +55,24 @@ data "aws_ami" "node_app" {
   most_recent = true
 }
 
-resource "aws_security_group" "alb" {
-  vpc_id      = data.terraform_remote_state.vpc.outputs.vpc_id
-  description = "Security Group for Application Load Balancer"
+locals {
+  vpc_id               = data.terraform_remote_state.network.outputs.vpc_id
+  iam_instance_profile = data.terraform_remote_state.iam.outputs.ec2_instance_profile_name
+}
+
+resource "aws_security_group" "public" {
+  vpc_id = local.vpc_id
 
   ingress {
+    description = "Allow HTTP from everywhere"
+    protocol    = "tcp"
     from_port   = 80
     to_port     = 80
-    protocol    = "tcp"
     cidr_blocks = ["0.0.0.0/0"]
   }
 
   egress {
+    description = "Allow outbound traffic on all ports"
     protocol    = "-1"
     from_port   = 0
     to_port     = 0
@@ -75,18 +80,18 @@ resource "aws_security_group" "alb" {
   }
 }
 
-resource "aws_security_group" "webserver" {
-  vpc_id      = data.terraform_remote_state.vpc.outputs.vpc_id
-  description = "Security Group for Webserver instances"
+resource "aws_security_group" "private" {
+  vpc_id = local.vpc_id
 
   ingress {
-    from_port   = var.server_port
-    to_port     = var.server_port
-    protocol    = "tcp"
-    cidr_blocks = data.terraform_remote_state.vpc.outputs.public_subnets_cidr_blocks
+    protocol        = "tcp"
+    from_port       = var.server_port
+    to_port         = var.server_port
+    security_groups = [aws_security_group.public.id]
   }
 
   egress {
+    description = "Allow outbound traffic on all ports"
     protocol    = "-1"
     from_port   = 0
     to_port     = 0
@@ -97,8 +102,8 @@ resource "aws_security_group" "webserver" {
 resource "aws_launch_configuration" "webserver" {
   image_id             = data.aws_ami.node_app.id
   instance_type        = "t2.micro"
-  iam_instance_profile = data.terraform_remote_state.iam.outputs.ec2_instance_profile_name
-  security_groups      = [aws_security_group.webserver.id]
+  iam_instance_profile = local.iam_instance_profile
+  security_groups      = [aws_security_group.private.id]
   user_data = templatefile(
     "./user_data.sh",
     {
@@ -109,7 +114,7 @@ resource "aws_launch_configuration" "webserver" {
   )
 
   lifecycle {
-    # reference used in ASG launch confuguraiton will be updated after creating a new resource and destroying this one
+    # reference used in ASG launch configuraiton will be updated after creating a new resource and destroying this one
     create_before_destroy = true
   }
 }
@@ -118,7 +123,7 @@ resource "aws_lb_target_group" "asg" {
   name     = "webserver-cluster"
   port     = var.server_port
   protocol = "HTTP"
-  vpc_id   = data.terraform_remote_state.vpc.outputs.vpc_id
+  vpc_id   = local.vpc_id
 
   health_check {
     path                = "/"
@@ -136,7 +141,7 @@ resource "aws_autoscaling_group" "asg" {
   name = aws_launch_configuration.webserver.name
 
   launch_configuration = aws_launch_configuration.webserver.name
-  vpc_zone_identifier  = data.terraform_remote_state.vpc.outputs.private_subnet_ids
+  vpc_zone_identifier  = data.terraform_remote_state.network.outputs.private_subnet_ids
 
   target_group_arns = [aws_lb_target_group.asg.arn]
   health_check_type = "ELB"
@@ -162,8 +167,8 @@ resource "aws_autoscaling_group" "asg" {
 resource "aws_lb" "alb" {
   name               = "alb"
   load_balancer_type = "application"
-  subnets            = data.terraform_remote_state.vpc.outputs.public_subnets_ids
-  security_groups    = [aws_security_group.alb.id]
+  subnets            = data.terraform_remote_state.network.outputs.public_subnet_ids
+  security_groups    = [aws_security_group.public.id]
 }
 
 resource "aws_lb_listener" "http" {

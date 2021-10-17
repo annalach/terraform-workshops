@@ -1,7 +1,5 @@
 # Introduction
 
-These workshops are designed to pass you practical knowledge. We will be building, updating, and destroying resources on AWS Cloud using Terraform. Instead of giving you a ready-to-use solution, we will be building it step by step and testing things along the way.
-
 ## Amazon Web Services
 
 ### AWS Free Tier

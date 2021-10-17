@@ -6,26 +6,15 @@ terraform {
   required_providers {
     aws = {
       source  = "hashicorp/aws"
-      version = "~> 3.27"
+      version = "~> 3.62.0"
     }
   }
 
-  required_version = ">= 0.14.9"
+  required_version = ">= 1.0.8"
 }
 
 provider "aws" {
-  profile = "default"
-  region  = "eu-central-1"
-}
-
-resource "random_string" "name" {
-  length  = 16
-  special = false
-}
-
-resource "random_string" "username" {
-  length  = 16
-  special = false
+  region = "eu-central-1"
 }
 
 resource "random_password" "password" {
@@ -45,17 +34,14 @@ resource "aws_secretsmanager_secret" "db_secret" {
 resource "aws_secretsmanager_secret_version" "db_secret_version" {
   secret_id = aws_secretsmanager_secret.db_secret.id
   secret_string = jsonencode({
-    name     = random_string.name.result
-    username = random_string.username.result
+    name     = "workshopsdb"
+    username = "workshopsuser"
     password = random_password.password.result
   })
 }
+
 ```
 {% endcode %}
-
-```bash
-$ touch outputs.tf
-```
 
 {% code title="terraform/secrets/outputs.tf" %}
 ```bash
@@ -65,31 +51,25 @@ output "db_secert_arn" {
 ```
 {% endcode %}
 
-```bash
-$ terraform init
-$ terraform apply
-
-Apply complete! Resources: 6 added, 0 changed, 0 destroyed.
-
-Outputs:
-
-db_secert_arn = "arn:aws:secretsmanager:eu-central-1:852046301552:secret:db-secret-Je6HqeVPr6c=-Wi3YY3"
-```
+Try to read the secret's value using the AWS CLI:
 
 ```bash
-$ aws secretsmanager get-secret-value --secret-id arn:aws:secretsmanager:eu-central-1:852046301552:secret:db-secret-Je6HqeVPr6c=-Wi3YY3
+$ aws secretsmanager get-secret-value --secret-id aws secretsmanager get-secret-value --secret-id arn:aws:secretsmanager:eu-central-1:852046301552:secret:db-secret-WNqgLUG8tGI=-5EzeJ8
 
 {
-    "ARN": "arn:aws:secretsmanager:eu-central-1:852046301552:secret:db-secret-Je6HqeVPr6c=-Wi3YY3",
-    "Name": "db-secret-Je6HqeVPr6c=",
-    "VersionId": "7C8DBD19-D7AC-47D9-94D7-41081C0D1C61",
-    "SecretString": "{\"name\":\"nrolhkUfmoqjHBhF\",\"password\":\"zilJqjnsbhvDvHzs\",\"username\":\"N2FSa67lDzlaSQkB\"}",
+    "ARN": "arn:aws:secretsmanager:eu-central-1:852046301552:secret:db-secret-WNqgLUG8tGI=-5EzeJ8",
+    "Name": "db-secret-WNqgLUG8tGI=",
+    "VersionId": "4FF5D96B-24A9-4712-804B-BCD4D1AF3D6B",
+    "SecretString": "{\"name\":\"workshopsdb\",\"password\":\"iypoEyxNfmcWeqnZ\",\"username\":\"workshopsuser\"}",
     "VersionStages": [
         "AWSCURRENT"
     ],
-    "CreatedDate": "2021-09-20T21:48:32.260000+02:00"
+    "CreatedDate": "2021-10-17T21:08:18.435000+02:00"
 }
 ```
 
-The example code from this section is available [here](https://github.com/annalach/terraform-workshops/tree/master/terraform-workshops/secrets).
+Our application will need to read the secret's value to be able to connect to the database. We need to make sure we can read the secret's value from the EC2 instance which is running in the private subnet. First, we need to create IAM Role that the EC2 instance will use.
 
+{% hint style="info" %}
+IAM Role is a way of giving some privileges to some AWS resource to let it do something with another AWS resource.
+{% endhint %}

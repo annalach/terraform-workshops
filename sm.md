@@ -43,6 +43,10 @@ resource "aws_secretsmanager_secret_version" "db_secret_version" {
 ```
 {% endcode %}
 
+{% hint style="info" %}
+If you want to keep database name and username secure you can create input variables and pass its values via environment variables that match the pattern TF\_VAR\_\<VARIABLE\_NAME>. You can learn more about this topic [here](https://learn.hashicorp.com/tutorials/terraform/sensitive-variables?in=terraform/configuration-language). Also, you can use [HashiCorp Vault](https://www.hashicorp.com/products/vault) to manage secrets.
+{% endhint %}
+
 {% code title="terraform/secrets/outputs.tf" %}
 ```bash
 output "db_secert_arn" {

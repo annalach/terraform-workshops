@@ -39,8 +39,13 @@ consists of:
 
 We will use the AWS Secrets Manager service to store credentials for the database. Also, we will build our own Amazon Machine Image that contains Node.js application code. The image will be used by Auto Scaling Group to spin up EC2 instances.
 
-![](.gitbook/assets/screen-shot-2021-10-08-at-16.17.44.png)
+![Created with https://www.diagrams.net/](.gitbook/assets/screen-shot-2021-10-08-at-16.17.44.png)
 
 ## Terraform
 
 An open source tool created by HashiCorp that allows you to define your infrastructure as code using a declarative language and deploy it in the cloud.
+
+## Packer
+
+An open source tool for creating identical machine images for multiple platforms from a single source configuration, also created by HashiCorp.
+

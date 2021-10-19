@@ -20,7 +20,7 @@ Charges that you may incur because of these workshops should not exceed **1$**. 
 * Secrets Manager
 * EBS (snapshots)
 
-We will destroy all resources at the end of the workshops.
+**We will destroy all resources at the end of the workshops.**
 
 ### The infrastructure we will build
 

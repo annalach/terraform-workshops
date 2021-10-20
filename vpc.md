@@ -2,6 +2,16 @@
 
 Classless Inter-Domain Routing (CIDR) block is a notation that allows you to specify a range of IPv4 addresses for the VPC. Visit [cidr.xyz](https://cidr.xyz) to check how many IP addresses you will have available for a certain CIDR block.
 
+{% hint style="info" %}
+The first four IP addresses and the last IP address in each subnet CIDR block are reserved, not available for use. In a subnet with CIDR block 10.0.1.0/24 the following IP addresses are reserved:
+
+* 10.0.1.0/24 - Network address
+* 10.0.1.1/24 - Reserved by AWS for the VPC router
+* 10.0.1.2/24 - Reserved by AWS for IP address of DNS server
+* 10.0.1.3/24 - Reserved by AWS for future use
+* 10.0.1.255/24 - Network broadcast address
+{% endhint %}
+
 Let's create a network for our infrastructure. In `terraform` directory , create `network` directory with `main.tf` file.
 
 {% code title="terraform/network/main.tf" %}

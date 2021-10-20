@@ -2,7 +2,7 @@
 
 ## Amazon Web Services
 
-![https://aws.amazon.com/about-aws/global-infrastructure/?hp=tile\&tile=map](<.gitbook/assets/Screen Shot 2021-10-20 at 19.46.55.png>)
+![https://aws.amazon.com/about-aws/global-infrastructure](<.gitbook/assets/Screen Shot 2021-10-20 at 19.46.55.png>)
 
 ### AWS Free Tier
 

@@ -1,5 +1,7 @@
 # 3. Virtual Private Cloud
 
+Classless Inter-Domain Routing (CIDR) block is a notation that allows you to specify a range of IPv4 addresses for the VPC. Visit [cidr.xyz](https://cidr.xyz) to check how many IP addresses you will have available for a certain CIDR block.
+
 Let's create a network for our infrastructure. In `terraform` directory , create `network` directory with `main.tf` file.
 
 {% code title="terraform/network/main.tf" %}
@@ -314,7 +316,7 @@ output "private_ip_address" {
 ```
 {% endcode %}
 
-Apply changes in `network` and then `webserver-cluster` directory. 
+Apply changes in `network` and then `webserver-cluster` directory.&#x20;
 
 To be able to connect via ssh from the EC2 instance in the public subnet to the EC2 instance in the private subnet copy your private key to EC2 instances using `scp`.
 

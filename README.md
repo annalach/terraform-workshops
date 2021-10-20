@@ -2,6 +2,8 @@
 
 ## Amazon Web Services
 
+![https://aws.amazon.com/about-aws/global-infrastructure/?hp=tile\&tile=map](<.gitbook/assets/Screen Shot 2021-10-20 at 19.46.55.png>)
+
 ### AWS Free Tier
 
 AWS allows to explore more than 100 products and start building on AWS using the Free Tier. You can check the details [here](https://aws.amazon.com/free). Using AWS Free Tier, we will use:

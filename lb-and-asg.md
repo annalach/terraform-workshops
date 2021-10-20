@@ -1,5 +1,11 @@
 # 9. Load Balancer & Auto Scaling Group
 
+Finally, let's create a webserver cluster that will consist of:
+
+* an **Application Load Balancer** that will forward traffic to
+* a **Target Group** (collection of EC2 instances, built from custom AMI) managed by
+* an **Auto Scaling Group**&#x20;
+
 {% code title="terraform/webserver-cluster/variables.tf" %}
 ```bash
 variable "server_port" {
@@ -140,7 +146,7 @@ resource "aws_launch_configuration" "webserver" {
   )
 
   lifecycle {
-    # reference used in ASG launch configuraiton will be updated after creating a new resource and destroying this one
+    # reference used in ASG launch configuration will be updated after creating a new resource and destroying this one
     create_before_destroy = true
   }
 }

@@ -1,5 +1,7 @@
 # 8. Amazon Machine Image
 
+Let's use Packer to create an Amazon Machine Image that will contain an application's code, Node.js, and required dependencies installed.
+
 {% code title="app/index.js" %}
 ```javascript
 const express = require("express");
@@ -252,4 +254,3 @@ Build 'amazon-ebs.ubuntu' finished after 5 minutes 4 seconds.
 --> amazon-ebs.ubuntu: AMIs were created:
 eu-central-1: ami-0cca38f651b773594
 ```
-

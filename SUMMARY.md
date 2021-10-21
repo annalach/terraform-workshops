@@ -11,5 +11,4 @@
 * [8. Amazon Machine Image](ami.md)
 * [9. Load Balancer & Auto Scaling Group](lb-and-asg.md)
 * [10. Clean Up](clean-up.md)
-* [11. Resources](resources.md)
-
+* [11. References](references.md)

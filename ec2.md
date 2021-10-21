@@ -4,7 +4,7 @@ During these workshops, we will use the default `local` backend. A backend is a 
 
 The state is kept in JSON format in a file with `tfstate` extension. It stores all information about your infrastructure, including **sensitive data** like database credentials. Due to this fact, the state shouldn't be kept in a version control system. An example `.gitignore` file for Terraform is available [here](https://github.com/github/gitignore/blob/master/Terraform.gitignore).
 
-Create a directory on your computer for these workshops. I will refer to this directory as a **root directory**. 
+Create a directory on your computer for these workshops. I will refer to this directory as a **root directory**.&#x20;
 
 In your root directory create `terraform` directory. Inside it, create `webserver` directory with `main.tf` file and add the following code to it:
 
@@ -36,7 +36,7 @@ resource "aws_instance" "webserver" {
 ```
 {% endcode %}
 
-The `terraform {}` block contains settings, including AWS provider installed from [Terraform Registry](https://registry.terraform.io). Providers are plugins that implement resource types. We will use AWS provider to create resources on AWS Cloud in `eu-central-1` region (Europe, Frankfurt).
+The `terraform {}` block contains settings, including [AWS provider](https://registry.terraform.io/providers/hashicorp/aws/latest/docs) installed from [Terraform Registry](https://registry.terraform.io). Providers are plugins that implement resource types. We will use AWS provider to create resources on AWS Cloud in `eu-central-1` region (Europe, Frankfurt).
 
 In the `webserver` directory, run `terraform fmt` command to format the code.
 
@@ -44,7 +44,7 @@ In the `webserver` directory, run `terraform fmt` command to format the code.
 $ terraform fmt
 ```
 
- Next, run `terraform init` command to install providers.
+&#x20;Next, run `terraform init` command to install providers.
 
 ```bash
 $ terraform init
@@ -367,7 +367,7 @@ Terraform will perform the following actions:
 Plan: 1 to add, 0 to change, 1 to destroy.
 ```
 
-Go to EC2 Dashboard on AWS Console to see created EC2 instance. 
+Go to EC2 Dashboard on AWS Console to see created EC2 instance.&#x20;
 
 {% hint style="info" %}
 The EC2 instance is created in the default VPC and assigned to the default Security Group (you can think about it as a virtual firewall) that controls incoming and outgoing traffic. By default Security Group has rules that allow communication between resources in this Security Group.
@@ -505,8 +505,8 @@ Connection to 3.120.139.14 closed.
 Let's make life easier and create:
 
 * `variable` to define server port and use it in security group's ingress rule and user data script
-*  `user_data` script that will fire up webserver when an EC2 instance is up
-*  `output` that will give us a public IP address of an instance
+* &#x20;`user_data` script that will fire up webserver when an EC2 instance is up
+* &#x20;`output` that will give us a public IP address of an instance
 
 {% code title="terraform/webserver/variables.tf" %}
 ```bash

@@ -14,4 +14,4 @@ In directories in the following order:
 4. iam
 5. secrets
 
-Go to AWC Console, EC2 Dashboard, and deregister created Amazon Machine Images and delete snapshots. 
+Go to AWS Console, EC2 Dashboard, and deregister created Amazon Machine Images and delete snapshots.&#x20;
